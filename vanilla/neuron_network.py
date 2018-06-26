@@ -43,22 +43,29 @@ class NeuronNetwork:
         self.w = np.array(w_list)
         self.b = np.array(b_list)
 
-    def prediction(self, x_input, print_result = False):
+    def prediction(self, x_input, return_type='array',print_result = False):
         # x_input expects a row np.array
         assert x_input.shape==(self.dimensions[0],), "Incompatible input format"
+        L = len(self.dimensions)
 
-        L = len(self.dimensions) #For a NN with 3 layers, L=2
+        #calculates the output vector
         y_prediction = x_input.reshape(self.dimensions[0],1) # turns input into column vector
         for l in range(L-1):
             y_prediction = self.act( np.dot( self.w[l], y_prediction ) + self.b[l] )
+        # prediction:
+        prediction = y_prediction.max()
 
-        result_dict = {} #dictionary with 0,...,9 as keys and y_prediction[i] as values
-        for i in range(self.dimensions[-1]):
-            result_dict[i] = y_prediction[i][0]
         if print_result:
             for i in range(self.dimensions[-1]):
                 print(
-                    "{}: ".format(i) + "{}".format(round(result_dict[i]*100,2) )
+                    ("{}: {}").format(i, round(y_prediction[i][0]*100,2) )
                 )
 
-        return result_dict
+        if return_type=='array':
+            return y_prediction, prediction
+
+        if return_type=='dictionary':
+            result_dict = {} #dictionary with 0,...,9 as keys and y_prediction[i] as values
+            for i in range(self.dimensions[-1]):
+                result_dict[i] = y_prediction[i][0]
+            return result_dict, prediction

@@ -59,7 +59,8 @@ class Trainer:
     def train(self, x_train, labels_train, n_training_examples:int,
         batch_size=100, n_epochs=1, learn_rate=0.001):
         '''
-        x_train=[training example][list of pixel values]
+        x_train[number of training example][:][:] = [list of pixel values]
+        label_train[number of training example] = 0,...,9
         '''
         n_batches = int(n_epochs*n_training_examples/batch_size)
         for batch in range(n_batches):
@@ -72,6 +73,7 @@ class Trainer:
 
             # calculates as averages the gradients for one batch
             for n_example in range(batch_size):
+                print( ('   Training example '+'{} / {}').format(n_example+1, batches_size) )
                 x_input=np.array(x_train[batch*batch_size+n_example][:])
                 label_input = labels_train[batch*batch_size+n_example]
                 grad_cost_w, grad_cost_b = self.gradient(x_input, label_input)
@@ -87,4 +89,22 @@ class Trainer:
             self.nn.b = self.nn.b - learn_rate * grad_cost_b_total
 
     def test(self, x_test, labels_test, n_test_examples:int):
+        '''
+        x_test[number of training example][:][:] = [list of pixel values]
+        label_test[number of training example] = 0,...,9
+        '''
         error_list=[]
+        n_right_predictions = 0
+
+        for n_test in range(n_test_examples):
+            # one-hot column vector enconding of label_input:
+            y_label = np.zeros(self.nn.dimensions[L-1]).reshape(self.nn.dimensions[L-1],1)
+            y_label[label_test[n_test]]=1.
+            y_prediction, prediction = self.nn.prediction(x_test[n_test])
+            # calculates error of one training example
+            error = np.linalg.norm(y_prediction-y_label)/2.
+            if prediction == label_test[n_test]:
+                n_right_predictions += 1
+
+        accuracy = float(n_right_predictions)/n_test_examples
+        return error_list, accuracy
