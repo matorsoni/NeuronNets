@@ -44,6 +44,7 @@ class NeuronNetwork:
         self.b = np.array(b_list)
 
     def prediction(self, x_input, print_result = False):
+        # x_input expects a row np.array
         assert x_input.shape==(self.dimensions[0],), "Incompatible input format"
 
         L = len(self.dimensions) #For a NN with 3 layers, L=2
@@ -51,23 +52,13 @@ class NeuronNetwork:
         for l in range(L-1):
             y_prediction = self.act( np.dot( self.w[l], y_prediction ) + self.b[l] )
 
+        result_dict = {} #dictionary with 0,...,9 as keys and y_prediction[i] as values
+        for i in range(self.dimensions[-1]):
+            result_dict[i] = y_prediction[i][0]
         if print_result:
-            print(y_prediction)
-        #return result_dict
+            for i in range(self.dimensions[-1]):
+                print(
+                    "{}: ".format(i) + "{}".format(round(result_dict[i]*100,2) )
+                )
 
-
-
-'''
-nn = NeuronNetwork(hidden_layers=[15])
-input = np.zeros(784)
-nn.prediction(input, True)
-'''
-
-# teste
-
-#import data
-#mndata = MNIST('../data/')
-#images, labels = mndata.load_training()
-#train = np.array(images) # train[0 - 59999][0 - 783]
-#labels = np.array(labels) # labels[0 - 59999]
-#print(train[0].shape)
+        return result_dict

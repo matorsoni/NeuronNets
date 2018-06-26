@@ -1,31 +1,29 @@
 from neuron_network import *
+from copy import deepcopy
 
 class Trainer:
 
-    def __init__(self, nn:NeuronNetwork, x_train, label_train, x_test, label_test):
+    def __init__(self, nn:NeuronNetwork):
         self.nn=nn
-        self.x_train=x_train # np.array column
-        self.label_train=label_train
-        self.x_test=x_test # np.array column
-        self.label_test=label_test
 
     '''
     Gradient and backpropagation algorithm. Variable names follow the notation from this
     reference: http://neuralnetworksanddeeplearning.com/chap2.html
     Note: the index l goes from 0 to L-2 instead of 2 to L.
     '''
-    def gradient(self, x_input, label_train, cost_function='MSE'):
+    def gradient(self, x_input, label_input:int, cost_function='MSE'):
         '''
         Gradient of the cost function with respect to the weights and biases
         for a given input x_input.
         C = 1/2 (y(x_input) - y_label)²
         '''
+        # x_input expects a row np.array
         assert x_input.shape==(self.nn.dimensions[0],), "Incompatible input format"
         L = len(self.nn.dimensions)
 
-        # one-hot column vector enconding of label_train:
+        # one-hot column vector enconding of label_input:
         y_label = np.zeros(self.nn.dimensions[L-1]).reshape(self.nn.dimensions[L-1],1)
-        y_label[label_train][0]=1.
+        y_label[label_input][0]=1.
 
         # Forward propagation to compute the weighted sums z[l][j]
         y_prediction = x_input.reshape(self.nn.dimensions[0],1) # turns input into column vector
@@ -47,7 +45,7 @@ class Trainer:
 
         # Finally, compute the actual gradients in function of z[] and delta[]
         grad_cost_w = []
-        for l in range(L-1)
+        for l in range(L-1):
             if l==0:
                 grad_cost_w.append( delta[l] * x_input) #column vec*row vec = tensor product = matrix
             else:
@@ -58,7 +56,35 @@ class Trainer:
         grad_cost_b = delta
         return grad_cost_w, grad_cost_b
 
-    def train(batch_size=100, epochs=1, learn_rate=0.001):
+    def train(self, x_train, labels_train, n_training_examples:int,
+        batch_size=100, n_epochs=1, learn_rate=0.001):
+        '''
+        x_train=[training example][list of pixel values]
+        '''
+        n_batches = int(n_epochs*n_training_examples/batch_size)
+        for batch in range(n_batches):
+            print( ('Batch '+'{} / {}').format(batch+1, n_batches) )
+            # Creates an empty np.array with the same dimensions as nn.w and nn.b
+            grad_cost_w_total = deepcopy(self.nn.w)
+            grad_cost_w_total.fill(0.)
+            grad_cost_b_total = deepcopy(self.nn.b)
+            grad_cost_b_total.fill(0.)
 
-        for m in range(batch_size):
-            pass
+            # calculates as averages the gradients for one batch
+            for n_example in range(batch_size):
+                x_input=np.array(x_train[batch*batch_size+n_example][:])
+                label_input = labels_train[batch*batch_size+n_example]
+                grad_cost_w, grad_cost_b = self.gradient(x_input, label_input)
+
+                grad_cost_w_total += grad_cost_w # may cause numerical errors??
+                grad_cost_b_total += grad_cost_b
+
+            grad_cost_w_total = grad_cost_w_total/batch_size # numerical errors??
+            grad_cost_b_total = grad_cost_b_total/batch_size
+
+            #updates the weigths:
+            self.nn.w = self.nn.w - learn_rate * grad_cost_w_total
+            self.nn.b = self.nn.b - learn_rate * grad_cost_b_total
+
+    def test(self, x_test, labels_test, n_test_examples:int):
+        error_list=[]
