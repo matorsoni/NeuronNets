@@ -23,7 +23,7 @@ class functions:
 
 class NeuronNetwork:
 
-    def __init__(self, input_size, output_size, hidden_layers=[], activation='sigmoid'):
+    def __init__(self, input_size=784, output_size=10, hidden_layers=[], activation='sigmoid'):
         self.dimensions = [input_size] + hidden_layers + [output_size]
         self.act, self.d_act = functions.choose(activation)
 
@@ -40,25 +40,31 @@ class NeuronNetwork:
         self.w = np.array(w_list)
         self.b = np.array(b_list)
 
-    def predict(self, x):
-        pass
+    def prediction(self, x_input, print_result = False):
+        assert x_input.shape==(self.dimensions[0],), "Incompatible input format"
 
-    def train(self, batch_size=10, epoch=1):
-        pass
+        #
+        y_pred = x_input.reshape(self.dimensions[0],1) # turns input into column vector
+        for l in range(0, len(self.dimensions)-1):
+            y_pred = self.act( np.dot( self.w[l], y_pred ) + self.b[l] )
+
+        if print_result:
+            print(y_pred)
+        #return result_dict
 
 
-#nn = NeuronNetwork(input_size=784, output_size=10, hidden_layers=[15])
-#print(nn.b[0])
-#print(nn.b[0].reshape(nn.b[0].size,1))
-#print(np.array([1,1,1,1,1]))
 
+'''
+nn = NeuronNetwork(hidden_layers=[15])
+input = np.zeros(784)
+nn.prediction(input, True)
+'''
 
 # teste
 
 #import data
-mndata = MNIST('../data/')
-images, labels = mndata.load_training()
-train = np.array(images) # train[0 - 59999][0 - 783]
-labels = np.array(labels) # labels[0 - 59999]
-for n in labels[0:20]:
-    print(n)
+#mndata = MNIST('../data/')
+#images, labels = mndata.load_training()
+#train = np.array(images) # train[0 - 59999][0 - 783]
+#labels = np.array(labels) # labels[0 - 59999]
+#print(train[0].shape)
