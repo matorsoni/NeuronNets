@@ -27,11 +27,14 @@ class NeuronNetwork:
         self.dimensions = [input_size] + hidden_layers + [output_size]
         self.act, self.d_act = functions.choose(activation)
 
-        # random initialization of weights and biases
-        # format: w[n_layer][w_ji (matrix)] , b[n_layer][b_j (column vec)]
+        # Random initialization of weights and biases
+        # Format: w[l][j][k] = weight of k-th neuron in layer l to j-th neuron in layer l+1
+        # b[l][j] = bias of j-th neuron in layer l+1
+        # L=len(self.dimensions), therefore l = 0,...,L-2 = range(L-1)
         w_list = []
         b_list = []
-        for l in range(len(hidden_layers) + 1):
+        L=len(self.dimensions)
+        for l in range(L-1):
             w_list.append(np.random.randn(self.dimensions[l+1], self.dimensions[l]))
             b_list.append(
                 np.random.randn(self.dimensions[l+1]).reshape((self.dimensions[l+1],1))
@@ -43,13 +46,13 @@ class NeuronNetwork:
     def prediction(self, x_input, print_result = False):
         assert x_input.shape==(self.dimensions[0],), "Incompatible input format"
 
-        #
-        y_pred = x_input.reshape(self.dimensions[0],1) # turns input into column vector
-        for l in range(0, len(self.dimensions)-1):
-            y_pred = self.act( np.dot( self.w[l], y_pred ) + self.b[l] )
+        L = len(self.dimensions) #For a NN with 3 layers, L=2
+        y_prediction = x_input.reshape(self.dimensions[0],1) # turns input into column vector
+        for l in range(L-1):
+            y_prediction = self.act( np.dot( self.w[l], y_prediction ) + self.b[l] )
 
         if print_result:
-            print(y_pred)
+            print(y_prediction)
         #return result_dict
 
 
