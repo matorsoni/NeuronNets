@@ -18,15 +18,15 @@ class Trainer:
         C = 1/2 (y(x_input) - y_label)²
         '''
         # x_input expects a row np.array
-        assert x_input.shape==(self.nn.dimensions[0],), "Incompatible input format"
-        L = len(self.nn.dimensions)
+        assert x_input.shape==(self.nn.layers[0],), "Incompatible input format"
+        L = len(self.nn.layers)
 
         # one-hot column vector enconding of label_input:
-        y_label = np.zeros(self.nn.dimensions[L-1]).reshape(self.nn.dimensions[L-1],1)
+        y_label = np.zeros(self.nn.layers[L-1]).reshape(self.nn.layers[L-1],1)
         y_label[label_input][0]=1.
 
         # Forward propagation to compute the weighted sums z[l][j]
-        y_prediction = x_input.reshape(self.nn.dimensions[0],1) # turns input into column vector
+        y_prediction = x_input.reshape(self.nn.layers[0],1) # turns input into column vector
         z=[]
         for l in range(L-1):
             z.append( np.dot( self.nn.w[l], y_prediction ) + self.nn.b[l] )
@@ -98,7 +98,7 @@ class Trainer:
 
         for n_test in range(n_test_examples):
             # one-hot column vector enconding of label_input:
-            y_label = np.zeros(self.nn.dimensions[L-1]).reshape(self.nn.dimensions[L-1],1)
+            y_label = np.zeros(self.nn.layers[L-1]).reshape(self.nn.layers[L-1],1)
             y_label[label_test[n_test]]=1.
             y_prediction, prediction = self.nn.prediction(x_test[n_test])
             # calculates error of one training example
