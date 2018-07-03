@@ -1,10 +1,19 @@
 from neuron_network import *
 from copy import deepcopy
 
+
 class Trainer:
 
     def __init__(self, nn:NeuronNetwork):
         self.nn=nn
+
+    def one_hot_vector(label_input:int):
+        '''
+        One-hot column vector enconding of label_input
+        '''
+        vec_label = np.zeros(self.nn.layers[L-1]).reshape(self.nn.layers[L-1],1)
+        vec_label[label_input][0]=1.
+        return vec_label
 
     '''
     Gradient and backpropagation algorithm. Variable names follow the notation from this
@@ -16,17 +25,28 @@ class Trainer:
         Gradient of the cost function with respect to the weights and biases
         for a given input x_input.
         C = 1/2 (y(x_input) - y_label)²
+
+        input format:
+            x_input = column np.array, shape = (___, 1)
+            label_input = integer 0,...,9
+
+        variables in this scope:
+            delta = np.array, with delta[l] = column vector
+            z = np.array, with z[l] = column vector
+
+        output format:
+            grad_cost_w = np.array, with grad_cost_w[l] = matrix
+            grad_cost_b = np.array, with grad_cost_b[l] = column vector
+
         '''
-        # x_input expects a row np.array
-        assert x_input.shape==(self.nn.layers[0],), "Incompatible input format"
+
+        assert x_input.shape == (self.nn.layers[0], 1) , "Incompatible input dimension"
         L = len(self.nn.layers)
 
-        # one-hot column vector enconding of label_input:
-        y_label = np.zeros(self.nn.layers[L-1]).reshape(self.nn.layers[L-1],1)
-        y_label[label_input][0]=1.
+        y_label = one_hot_vector(label_input)
 
         # Forward propagation to compute the weighted sums z[l][j]
-        y_prediction = x_input.reshape(self.nn.layers[0],1) # turns input into column vector
+        y_prediction = np.array(x_input, dtype=np.float64) # trying to avoid numerical error
         z=[]
         for l in range(L-1):
             z.append( np.dot( self.nn.w[l], y_prediction ) + self.nn.b[l] )
@@ -37,30 +57,36 @@ class Trainer:
         delta=[]
         delta.append( (y_prediction-y_label)*self.nn.d_act(z[L-2]) ) #element-wise product
         if L>2:
-            for l in range(L-3, -1):
+            for l in range(L-3, -1): #
                 # Backward recurrence: delta[l]=sigma'(z[l]) * np.dot(w[l+1].transpose, delta[l+1])
                 # delta[0] is always the most recent !
-                delta = [self.nn.d_act(z[l])*np.dot( self.nn.w[l+1].transpose(), delta[0] )]+delta
+                delta = [ self.nn.d_act(z[l])*np.dot( self.nn.w[l+1].transpose(), delta[0] ) ].append(delta)
         delta = np.array(delta)
+        print(delta)
 
         # Finally, compute the actual gradients in function of z[] and delta[]
-        grad_cost_w = []
-        for l in range(L-1):
-            if l==0:
-                grad_cost_w.append( delta[l] * x_input) #column vec*row vec = tensor product = matrix
-            else:
+
+        grad_cost_w = [ delta[0] * x_input.reshape(x_input.size) ] #column vec*row vec = tensor product = matrix
+        if L>2:
+            for l in range(1, L-1):
+            #if l==0:
+            #    grad_cost_w.append( delta[l] * x_input) #column vec*row vec = tensor product = matrix
+            #else:
                 #delta (column vec) * sigma(z[l-1]) (row vec)
                 grad_cost_w.append( delta[l] * self.nn.act(z[l-1].reshape(z[l-1].size)) )
 
         grad_cost_w = np.array(grad_cost_w)
-        grad_cost_b = delta
+        grad_cost_b = delta # useless, might as well just return delta....
         return grad_cost_w, grad_cost_b
 
     def train(self, x_train, labels_train, n_training_examples:int,
         batch_size=100, n_epochs=1, learn_rate=0.001):
         '''
-        x_train[number of training example][:][:] = [list of pixel values]
-        label_train[number of training example] = 0,...,9
+        Training method.
+
+        input format:
+            x_train[n_example][:][:] = [list of pixel values]
+            label_train[n_example] = 0,...,9
         '''
         n_batches = int(n_epochs*n_training_examples/batch_size)
         for batch in range(n_batches):
@@ -73,7 +99,7 @@ class Trainer:
 
             # calculates as averages the gradients for one batch
             for n_example in range(batch_size):
-                print( ('   Training example '+'{} / {}').format(n_example+1, batches_size) )
+                print( ('   Training example '+'{} / {}').format(n_example+1, batch_size) )
                 x_input=np.array(x_train[batch*batch_size+n_example][:])
                 label_input = labels_train[batch*batch_size+n_example]
                 grad_cost_w, grad_cost_b = self.gradient(x_input, label_input)
@@ -88,10 +114,13 @@ class Trainer:
             self.nn.w = self.nn.w - learn_rate * grad_cost_w_total
             self.nn.b = self.nn.b - learn_rate * grad_cost_b_total
 
-    def test(self, x_test, labels_test, n_test_examples:int):
+    def test(self, x_test, label_test, n_test_examples:int):
         '''
-        x_test[number of training example][:][:] = [list of pixel values]
-        label_test[number of training example] = 0,...,9
+        Testing method.
+
+        input format:
+            x_test[number of training example][:][:] = [list of pixel values]
+            label_test[number of training example] = 0,...,9
         '''
         error_list=[]
         n_right_predictions = 0
@@ -100,6 +129,7 @@ class Trainer:
             # one-hot column vector enconding of label_input:
             y_label = np.zeros(self.nn.layers[L-1]).reshape(self.nn.layers[L-1],1)
             y_label[label_test[n_test]]=1.
+
             y_prediction, prediction = self.nn.prediction(x_test[n_test])
             # calculates error of one training example
             error = np.linalg.norm(y_prediction-y_label)/2.

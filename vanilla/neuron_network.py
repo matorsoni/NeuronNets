@@ -1,19 +1,18 @@
 import numpy as np
-from mnist import MNIST
 
 class functions:
 
     def sigmoid(z):
-        return 1/(1+np.exp(-z))
+        return 1./(1.+np.exp(-z))
 
     def d_sigmoid(z):
-        return sigmoid(z)*(1-sigmoid(z))
+        return functions.sigmoid(z)*(1.-functions.sigmoid(z))
 
     def relu(z):
-        return 0 if z<=0. else z
+        return 0. if z<=0. else z
 
     def d_relu(z):
-        return 0 if z<=0. else 1
+        return 0. if z<=0. else 1.
 
     def choose(func_name = 'sigmoid'):
         if func_name == 'sigmoid':
@@ -26,7 +25,7 @@ class NeuronNetwork:
     def __init__(self, input_size=784, output_size=10, hidden_layers=[], activation='sigmoid'):
         self.layers = [input_size] + hidden_layers + [output_size]
         self.act, self.d_act = functions.choose(activation)
-	self.n_layers = len(self.layers)
+        self.n_layers = len(self.layers)
 
         # Random initialization of weights and biases
         # Format: w[l][j][k] = weight of k-th neuron in layer l to j-th neuron in layer l+1
@@ -36,10 +35,14 @@ class NeuronNetwork:
         b_list = []
         L=len(self.layers)
         for l in range(L-1):
-            w_list.append(np.random.randn(self.layers[l+1], self.layers[l]))
-            b_list.append(
-                np.random.randn(self.layers[l+1]).reshape((self.layers[l+1],1))
-                )
+            # assings float64 type to this random initialization
+            w = np.zeros((self.layers[l+1], self.layers[l]), dtype=np.float64)
+            w[:] = np.random.randn(*w.shape)
+            w_list.append(w)
+
+            b = np.zeros((self.layers[l+1],1), dtype=np.float64)#.reshape((self.layers[l+1],1))
+            b[:] = np.random.randn(*b.shape)
+            b_list.append(b)
 
         self.w = np.array(w_list)
         self.b = np.array(b_list)
