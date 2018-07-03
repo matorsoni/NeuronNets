@@ -85,7 +85,7 @@ class Trainer:
         Training method.
 
         input format:
-            x_train[n_example][:][:] = [list of pixel values]
+            x_train[n_example] = np.array column vector
             label_train[n_example] = 0,...,9
         '''
         n_batches = int(n_epochs*n_training_examples/batch_size)
@@ -100,7 +100,7 @@ class Trainer:
             # calculates as averages the gradients for one batch
             for n_example in range(batch_size):
                 print( ('   Training example '+'{} / {}').format(n_example+1, batch_size) )
-                x_input=np.array(x_train[batch*batch_size+n_example][:])
+                x_input=x_train[batch*batch_size+n_example]
                 label_input = labels_train[batch*batch_size+n_example]
                 grad_cost_w, grad_cost_b = self.gradient(x_input, label_input)
 
@@ -119,7 +119,7 @@ class Trainer:
         Testing method.
 
         input format:
-            x_test[number of training example][:][:] = [list of pixel values]
+            x_test[number of training example] = np.array column vector
             label_test[number of training example] = 0,...,9
         '''
         error_list=[]
@@ -127,8 +127,7 @@ class Trainer:
 
         for n_test in range(n_test_examples):
             # one-hot column vector enconding of label_input:
-            y_label = np.zeros(self.nn.layers[L-1]).reshape(self.nn.layers[L-1],1)
-            y_label[label_test[n_test]]=1.
+            y_label = one_hot_vector(label_test[n_test])
 
             y_prediction, prediction = self.nn.prediction(x_test[n_test])
             # calculates error of one training example

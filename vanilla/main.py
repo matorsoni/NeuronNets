@@ -6,8 +6,19 @@ from trainer import *
 ## import MNIST class from there
 from loader import MNIST
 
-def normalize_data():
-    pass
+def normalize_data(train_list_in, test_list_in):
+    '''
+    Input:
+        train_list_in[i] = list of pixel values
+        test_list_in[i] = list of pixel values
+
+    Output:
+        train_list_out[i] = np.array column vector
+        test_list_out[i] = np.array column vector
+    '''
+    train_list_out = [np.array(values).reshape(len(values),1)/255. for values in train_list_in]
+    test_list_out = [np.array(values).reshape(len(values),1)/255. for values in test_list_in]
+    return train_list_out, test_list_out
 
 
 def main():
@@ -19,13 +30,12 @@ def main():
     # read data into variables
     # x_train[0 - 59999][0 - 783], labels_train[0 - 59999]
     mndata = MNIST('../data')
-    x_train, labels_train = mndata.load_training()
+    x_train_in, labels_train = mndata.load_training()
     print('MNIST training data has been read')
-    x_test, labels_test = mndata.load_testing()
+    x_test_in, labels_test = mndata.load_testing()
     print('MNIST test data has been read')
+    x_train, x_test = normalize_data(x_train_in, x_test_in)
 
-    #min max scaling
-    print(np.array(x_train[0])/255.)
 
     trainer = Trainer(nn)
     trainer.train(x_train, labels_train, n_training_examples=5000, batch_size=100, n_epochs=1, learn_rate=1.)

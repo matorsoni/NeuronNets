@@ -48,12 +48,12 @@ class NeuronNetwork:
         self.b = np.array(b_list)
 
     def prediction(self, x_input, return_type='array',print_result = False):
-        # x_input expects a row np.array
-        assert x_input.shape==(self.layers[0],), "Incompatible input format"
+        # x_input expects a column np.array
+        assert x_input.shape==(self.layers[0],1), "Incompatible input format"
         L = len(self.layers)
 
         #calculates the output vector
-        y_prediction = x_input.reshape(self.layers[0],1) # turns input into column vector
+        y_prediction = x_input # turns input into column vector
         for l in range(L-1):
             y_prediction = self.act( np.dot( self.w[l], y_prediction ) + self.b[l] )
         # prediction:
