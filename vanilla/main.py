@@ -37,11 +37,19 @@ def main():
     print('MNIST data has been normalized')
 
     trainer = Trainer(nn)
-    trainer.train(x_train, labels_train, n_training_examples=60000, batch_size=500, n_epochs=20, learn_rate=1.)
+    # train(n_training_examples=60000, batch_size=200, n_epochs=20, learn_rate=1.5) = 0.872 accuracy
+    # train(n_training_examples=60000, batch_size=200, n_epochs=40, learn_rate=1.5) = 0.906 accuracy
+    trainer.train(x_train, labels_train, n_training_examples=60000, batch_size=200, n_epochs=50, learn_rate=1.5)
     error_list, acc = trainer.test(x_test, labels_test, n_test_examples=1000)
 
     #print ('error: {} ----> {}'.format(error_list[0], error_list[-1]))
     print ('accuracy = {}'.format(acc))
+
+    #testing with examples
+
+    for i in range(10):
+        vec, pred = nn.prediction(x_test[i])
+        print( 'Image: {} ====> Prediction: {}'.format(labels_test[i], pred))
 
 
 
