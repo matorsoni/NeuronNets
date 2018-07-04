@@ -49,6 +49,18 @@ class NeuronNetwork:
 
     def prediction(self, x_input, return_type='array',print_result = False):
         # x_input expects a column np.array
+        '''
+        Forward propagation to compute the prediction
+
+        Input:
+            x_input = np.array column vector
+            return_type = 'array' or 'dictionary'
+
+        Output:
+            prediction = integer 0,....,9
+            y_prediction = np.array column vector
+            result_dict = dictionary  
+        '''
         assert x_input.shape==(self.layers[0],1), "Incompatible input format"
         L = len(self.layers)
 
@@ -56,8 +68,10 @@ class NeuronNetwork:
         y_prediction = x_input # turns input into column vector
         for l in range(L-1):
             y_prediction = self.act( np.dot( self.w[l], y_prediction ) + self.b[l] )
-        # prediction:
-        prediction = y_prediction.max()
+
+        # ind_prediction = tuple (k, 0) since y_prediction.shape=(10,1)
+        ind_prediction = np.unravel_index(np.argmax(y_prediction, axis=None), y_prediction.shape)
+        prediction = ind_prediction[0]
 
         if print_result:
             for i in range(self.layers[-1]):

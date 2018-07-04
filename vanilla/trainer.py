@@ -7,11 +7,11 @@ class Trainer:
     def __init__(self, nn:NeuronNetwork):
         self.nn=nn
 
-    def one_hot_vector(label_input:int):
+    def one_hot_vector(self, label_input:int):
         '''
         One-hot column vector enconding of label_input
         '''
-        vec_label = np.zeros(self.nn.layers[L-1]).reshape(self.nn.layers[L-1],1)
+        vec_label = np.zeros(self.nn.layers[-1]).reshape(self.nn.layers[-1],1)
         vec_label[label_input][0]=1.
         return vec_label
 
@@ -43,7 +43,7 @@ class Trainer:
         assert x_input.shape == (self.nn.layers[0], 1) , "Incompatible input dimension"
         L = len(self.nn.layers)
 
-        y_label = one_hot_vector(label_input)
+        y_label = self.one_hot_vector(label_input)
 
         # Forward propagation to compute the weighted sums z[l][j]
         y_prediction = np.array(x_input, dtype=np.float64) # trying to avoid numerical error
@@ -56,13 +56,13 @@ class Trainer:
         # Backward propagation to compute the derivatives of C wrt z[l][j],
         delta=[]
         delta.append( (y_prediction-y_label)*self.nn.d_act(z[L-2]) ) #element-wise product
+
         if L>2:
-            for l in range(L-3, -1): #
+            for l in range(L-3, -1, -1): # from L-3 to 0 with step=-1
                 # Backward recurrence: delta[l]=sigma'(z[l]) * np.dot(w[l+1].transpose, delta[l+1])
                 # delta[0] is always the most recent !
-                delta = [ self.nn.d_act(z[l])*np.dot( self.nn.w[l+1].transpose(), delta[0] ) ].append(delta)
+                delta = [ self.nn.d_act(z[l])*np.dot( self.nn.w[l+1].transpose(), delta[0] ) ]+delta
         delta = np.array(delta)
-        print(delta)
 
         # Finally, compute the actual gradients in function of z[] and delta[]
 
@@ -88,31 +88,33 @@ class Trainer:
             x_train[n_example] = np.array column vector
             label_train[n_example] = 0,...,9
         '''
-        n_batches = int(n_epochs*n_training_examples/batch_size)
-        for batch in range(n_batches):
-            print( ('Batch '+'{} / {}').format(batch+1, n_batches) )
-            # Creates an empty np.array with the same dimensions as nn.w and nn.b
-            grad_cost_w_total = deepcopy(self.nn.w)
-            grad_cost_w_total.fill(0.)
-            grad_cost_b_total = deepcopy(self.nn.b)
-            grad_cost_b_total.fill(0.)
+        batches_per_epoch = int(n_training_examples/batch_size)
+        for epoch in range(n_epochs):
+            print( ('Epoch '+'{} / {}').format(epoch+1, n_epochs) )
 
-            # calculates as averages the gradients for one batch
-            for n_example in range(batch_size):
-                print( ('   Training example '+'{} / {}').format(n_example+1, batch_size) )
-                x_input=x_train[batch*batch_size+n_example]
-                label_input = labels_train[batch*batch_size+n_example]
-                grad_cost_w, grad_cost_b = self.gradient(x_input, label_input)
+            for batch in range(batches_per_epoch):
+                #print( ('Batch '+'{} / {}').format(batch+1, batches_per_epoch) )
+                # Creates an empty np.array with the same dimensions as nn.w and nn.b
+                grad_cost_w_total = deepcopy(self.nn.w)
+                grad_cost_w_total.fill(0.)
+                grad_cost_b_total = deepcopy(self.nn.b)
+                grad_cost_b_total.fill(0.)
 
-                grad_cost_w_total += grad_cost_w # may cause numerical errors??
-                grad_cost_b_total += grad_cost_b
+                # calculates as averages the gradients for one batch
+                for n_example in range(batch_size):
+                    x_input = x_train[batch*batch_size+n_example]
+                    label_input = labels_train[batch*batch_size+n_example]
+                    grad_cost_w, grad_cost_b = self.gradient(x_input, label_input)
 
-            grad_cost_w_total = grad_cost_w_total/batch_size # numerical errors??
-            grad_cost_b_total = grad_cost_b_total/batch_size
+                    grad_cost_w_total += grad_cost_w # may cause numerical errors??
+                    grad_cost_b_total += grad_cost_b
 
-            #updates the weigths:
-            self.nn.w = self.nn.w - learn_rate * grad_cost_w_total
-            self.nn.b = self.nn.b - learn_rate * grad_cost_b_total
+                grad_cost_w_total = grad_cost_w_total/batch_size # numerical errors??
+                grad_cost_b_total = grad_cost_b_total/batch_size
+
+                #updates the weigths:
+                self.nn.w = self.nn.w - learn_rate * grad_cost_w_total
+                self.nn.b = self.nn.b - learn_rate * grad_cost_b_total
 
     def test(self, x_test, label_test, n_test_examples:int):
         '''
@@ -127,7 +129,7 @@ class Trainer:
 
         for n_test in range(n_test_examples):
             # one-hot column vector enconding of label_input:
-            y_label = one_hot_vector(label_test[n_test])
+            y_label = self.one_hot_vector(label_test[n_test])
 
             y_prediction, prediction = self.nn.prediction(x_test[n_test])
             # calculates error of one training example

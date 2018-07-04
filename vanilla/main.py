@@ -23,9 +23,8 @@ def normalize_data(train_list_in, test_list_in):
 
 def main():
     nn = NeuronNetwork(input_size=784, output_size=10, hidden_layers=[15])
-    input = np.random.randn(784)
-    dic = nn.prediction(input, print_result=True)
-    print(nn.n_layers)
+    #input = np.random.randn(784).reshape(784,1)
+    #dic = nn.prediction(input, print_result=True)
 
     # read data into variables
     # x_train[0 - 59999][0 - 783], labels_train[0 - 59999]
@@ -35,13 +34,13 @@ def main():
     x_test_in, labels_test = mndata.load_testing()
     print('MNIST test data has been read')
     x_train, x_test = normalize_data(x_train_in, x_test_in)
-
+    print('MNIST data has been normalized')
 
     trainer = Trainer(nn)
-    trainer.train(x_train, labels_train, n_training_examples=5000, batch_size=100, n_epochs=1, learn_rate=1.)
+    trainer.train(x_train, labels_train, n_training_examples=60000, batch_size=500, n_epochs=20, learn_rate=1.)
     error_list, acc = trainer.test(x_test, labels_test, n_test_examples=1000)
 
-    print ('error: {} ----> {}'.format(error[0], error[-1]))
+    #print ('error: {} ----> {}'.format(error_list[0], error_list[-1]))
     print ('accuracy = {}'.format(acc))
 
 
