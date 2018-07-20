@@ -9,7 +9,15 @@ class LSTM_Cell:
 	a_t = a_{t}
 	a_t_ = a_{t-1}
 	"""
-	def __init__(self, input_length: int):
+	def __init__(self, input_length: int, input_cells = [None, None], output_cells = [None, None]):
+		# pointers to neighbour cells 
+		assert len(input_cells) == 2, "Must have 2 input cell, can be [None, None]"
+		assert len(output_cells) == 2, "Must have 2 output cell, can be [None, None]"
+		self.left_cell = input_cells[0]
+		self.down_cell = input_cells[1]
+		self.right_cell = output_cells[0]
+		self.up_cell = output_cells[1]
+
 		self.input_dim = input_length
 		'''
 		self.w_xi = np.zeros([input_length, input_length])
@@ -62,3 +70,13 @@ class LSTM_Cell:
 		h_t = o_t * functions.tanh(c_t)
 
 		return h_t, c_t
+
+	def set_pointer2cell(self, cell: LSTM_Cell, orientation: str):
+		if orientation == 'left':
+			self.left_cell = cell
+		elif orientation == 'down':
+			self.down_cell = cell
+		elif orientation == 'right':
+			self.right_cell = cell
+		else orientation == 'up':
+			self.up_cell = cell
