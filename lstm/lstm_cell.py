@@ -60,6 +60,7 @@ class LSTM_Cell:
 		self.b_o = np.zeros([input_length, 1])
 
 	def compute(self, x_t, h_t_, c_t_):
+		# input must all be colum np.arrays
 		assert x_t.shape == (self.input_dim, 1), "incompatible x_t format"
 		assert h_t_.shape == (self.input_dim, 1), "incompatible h_t_ format"
 		assert c_t_.shape == (self.input_dim, 1), "incompatible c_t_ format"
@@ -71,12 +72,26 @@ class LSTM_Cell:
 
 		return h_t, c_t
 
-	def set_pointer2cell(self, cell: LSTM_Cell, orientation: str):
+	def set_pointer2cell(self, cell, orientation: str):
 		if orientation == 'left':
 			self.left_cell = cell
 		elif orientation == 'down':
 			self.down_cell = cell
 		elif orientation == 'right':
 			self.right_cell = cell
-		else orientation == 'up':
+		elif orientation == 'up':
 			self.up_cell = cell
+			
+	def __str__(self):
+		s = '      ' # 6 spaces
+		if self.up_cell != None: s += 'cell\n'
+		else: s += 'None\n'
+		if self.left_cell != None: s += 'cell  '
+		else: s += 'None  '
+		s += 'this  '
+		if self.right_cell != None: s += 'cell\n'
+		else: s += 'None\n'
+		s += '      '
+		if self.down_cell != None: s += 'cell\n'
+		else: s += 'None\n'
+		return s

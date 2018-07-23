@@ -2,7 +2,7 @@ from lstm import *
 
 def main():
 
-	
+	'''
 	# lstm_cell test
 	dim = 10000
 	ls = LSTM_Cell(dim)
@@ -14,7 +14,12 @@ def main():
 
 	print(h_t.shape, c_t.shape)
 	print(h_t[:5], c_t[:5])
+	'''
 	
+	lstm = LSTM(3, 1, 4, 4, 10)
+	print(lstm)
+
+	print(lstm.cells[3][3])
 
 if __name__ == "__main__":
 	main()

@@ -16,9 +16,23 @@ class LSTM(object):
 		self.n_fwd_layers = n_fwd_layers
 		
 		self.cells = [ [LSTM_Cell(input_length) for x in range(n_fwd_layers)] for y in range(n_hid_layers) ]
-		# conectar as cells
-		# sera que os pointers pras cells output são necessarias? se pa nao, pois pra fazer o forward feed basta usar 
-		# um loop for, sem precisar dos pointers
+
+		# linking all the cells
+		for y in range(n_hid_layers):
+			for x in range(n_fwd_layers-1): # link left and right cells in the same layer
+				self.cells[y][x].set_pointer2cell(self.cells[y][x+1], 'right')
+				self.cells[y][n_fwd_layers - 1 - x].set_pointer2cell(self.cells[y][n_fwd_layers - 2 - x], 'left')
+			
+			if y>0: # link current layer to the layer below it
+				for x in range(n_fwd_layers):
+					self.cells[y][x].set_pointer2cell(self.cells[y-1][x], 'down')
+					self.cells[y-1][x].set_pointer2cell(self.cells[y][x], 'up')
+	
+	def forward_pass(self, input:list):
+		# input = list[x_0, x_1, x_2, ...]
+		assert len(input) == self.n_in, 'Incompatible number of inputs'
+		
+
 
 	def __str__(self):
 		string = ''
@@ -40,6 +54,3 @@ class LSTM(object):
 		string += '\n'
 
 		return string
-
-a = LSTM(1, 2, 4, 2, input_length=2)
-print(a.cells)
