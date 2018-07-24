@@ -15,11 +15,20 @@ def main():
 	print(h_t.shape, c_t.shape)
 	print(h_t[:5], c_t[:5])
 	'''
-	
+	n_in = 3
+	n_out = 1
+	n_hid_layers = 4
+	input_length = 10
 	lstm = LSTM(3, 1, 4, 10)
 	print(lstm)
 
-	print(lstm.cells[0][0])
+	inputs = []
+	for i in range(n_in):
+		inputs.append(np.zeros([input_length, 1]))
+	
+	out = lstm.forward_pass(inputs)
+	for o in out:
+		print(o)
 
 if __name__ == "__main__":
 	main()

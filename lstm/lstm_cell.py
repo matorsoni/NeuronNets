@@ -18,7 +18,7 @@ class LSTM_Cell:
 		self.right_cell = output_cells[0]
 		self.up_cell = output_cells[1]
 
-		self.input_dim = input_length
+		self.input_length = input_length
 		'''
 		self.w_xi = np.zeros([input_length, input_length])
 		self.w_hi = np.zeros([input_length, input_length])
@@ -64,9 +64,9 @@ class LSTM_Cell:
 
 	def update(self, x_t): # Funcion H in the paper, computes the action of a cell by updating its c and h
 		# input must be colum np.arrays
-		assert x_t.shape == (self.input_dim, 1), "incompatible x_t format"
-		c_t_ = np.zeros([input_length, 1]) # should be zeros?
-		h_t_ = np.zeros([input_length, 1]) 
+		assert x_t.shape == (self.input_length, 1), "incompatible x_t format"
+		c_t_ = np.zeros([self.input_length, 1]) # should be zeros?
+		h_t_ = np.zeros([self.input_length, 1]) 
 
 		if self.left_cell != None:
 			c_t_ = self.left_cell.c
@@ -76,7 +76,7 @@ class LSTM_Cell:
 		f_t = functions.sigmoid(np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f)
 		self.c = f_t * c_t_ + i_t * functions.tanh(np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c)
 		o_t = functions.sigmoid(np.dot(self.w_xo, x_t) + np.dot(self.w_ho, h_t_) + self.w_co * c_t_ + self.b_o)
-		self.h = o_t * functions.tanh(c_t)
+		self.h = o_t * functions.tanh(self.c)
 
 	def set_pointer2cell(self, cell, orientation: str):
 		if orientation == 'left':

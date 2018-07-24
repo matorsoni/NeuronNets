@@ -47,17 +47,17 @@ class LSTM(object):
 				else:
 					if t==0:
 						self.cells[n][t].update(np.dot(self.W_ih[n], x_inputs[t]) + 
-							np.dot(self.W_h_h[n-1], self.cells[n-1][t]) + self.b_h[n])
+							np.dot(self.W_h_h[n-1], self.cells[n-1][t].h) + self.b_h[n])
 					else:
 						self.cells[n][t].update(np.dot(self.W_ih[n], x_inputs[t]) + np.dot(self.W_hh[n], self.cells[n][t-1].h) + 
-							np.dot(self.W_h_h[n-1], self.cells[n-1][t]) + self.b_h[n])
+							np.dot(self.W_h_h[n-1], self.cells[n-1][t].h) + self.b_h[n])
 			
-			y = b_y
+			y = self.b_y
 			for n in range(self.n_hid_layers):
 				y += np.dot(self.W_hy[n], self.cells[n][t].h)
 			output_list.append(y)  # Actually it is Y(y), the output layer function !!!! (what is this, exactly?)
 		
-		return output_list		
+		return output_list # esse outputlist ta sempre com n_in elementos....
 		
 	def __str__(self):
 		string = ''
