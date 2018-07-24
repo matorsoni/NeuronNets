@@ -16,10 +16,10 @@ def main():
 	print(h_t[:5], c_t[:5])
 	'''
 	
-	lstm = LSTM(3, 1, 4, 4, 10)
+	lstm = LSTM(3, 1, 4, 10)
 	print(lstm)
 
-	print(lstm.cells[3][3])
+	print(lstm.cells[0][0])
 
 if __name__ == "__main__":
 	main()
