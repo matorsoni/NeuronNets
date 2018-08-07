@@ -9,36 +9,18 @@ class LSTM_Cell:
 	a_t = a_{t}
 	a_t_ = a_{t-1}
 	"""
-	def __init__(self, input_length: int, input_cells = [None, None], output_cells = [None, None]):
+	def __init__(self, input_length: int, input_cell = None, output_cell = None):
 		# pointers to neighbour cells 
-		assert len(input_cells) == 2, "Must have 2 input cell, can be [None, None]"
-		assert len(output_cells) == 2, "Must have 2 output cell, can be [None, None]"
-		self.left_cell = input_cells[0]
-		self.down_cell = input_cells[1]
-		self.right_cell = output_cells[0]
-		self.up_cell = output_cells[1]
-
+		#assert len(input_cell) == 1, "Must have 1 input cell, can be None"
+		#assert len(output_cell) == 1, "Must have 1 output cell, can be None"
+		
+		self.down_cell = input_cell
+		self.up_cell = output_cell
+		
 		self.input_length = input_length
-		'''
-		self.w_xi = np.zeros([input_length, input_length])
-		self.w_hi = np.zeros([input_length, input_length])
-		self.w_ci = np.zeros([input_length, input_length])
-		self.b_i = np.zeros([input_length, 1])
-
-		self.w_xf = np.zeros([input_length, input_length])
-		self.w_hf = np.zeros([input_length, input_length])
-		self.w_cf = np.zeros([input_length, input_length])
-		self.b_f = np.zeros([input_length, 1])
-
-		self.w_xc = np.zeros([input_length, input_length])
-		self.w_hc = np.zeros([input_length, input_length])
-		self.b_c = np.zeros([input_length, 1])
-
-		self.w_xo = np.zeros([input_length, input_length])
-		self.w_ho = np.zeros([input_length, input_length])
-		self.w_co = np.zeros([input_length, input_length])
-		self.b_o = np.zeros([input_length, 1])
-		'''
+		self.c_list = [] # list containing this cell's c state for every time stamp
+		self.h_list = [] # list containing this cell's h output for every time stamp
+		
 		# pensar em iniciar os b's com valor alto, tipo 10
 		self.w_xi = np.random.randn(input_length, input_length)
 		self.w_hi = np.random.randn(input_length, input_length)
@@ -62,42 +44,42 @@ class LSTM_Cell:
 		self.c = np.zeros([input_length, 1]) # this cell's state variable 
 		self.h = np.zeros([input_length, 1]) # this cell's output variable 
 
-	def update(self, x_t): # Funcion H in the paper, computes the action of a cell by updating its c and h
+	def update(self, x_t): ### TIRAR ESSES POINTERS TO CELL, 
+		# Funcion H in the paper, computes the action of a cell by updating its c and h
 		# input must be colum np.arrays
 		assert x_t.shape == (self.input_length, 1), "incompatible x_t format"
-		c_t_ = np.zeros([self.input_length, 1]) # should be zeros?
-		h_t_ = np.zeros([self.input_length, 1]) 
 
-		if self.left_cell != None:
-			c_t_ = self.left_cell.c
-			h_t_ = self.left_cell.h
+		if len(self.c_list) != 0 and len(self.h_list) != 0:
+			c_t_ = self.c_list[-1] # last c computed
+			h_t_ = self.h_list[-1] # last h computed 
+		else:
+			c_t_ = np.zeros([self.input_length, 1]) # should be zeros?
+			h_t_ = np.zeros([self.input_length, 1]) 
 
 		i_t = functions.sigmoid(np.dot(self.w_xi, x_t) + np.dot(self.w_hi, h_t_) + self.w_ci * c_t_ + self.b_i)
 		f_t = functions.sigmoid(np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f)
-		self.c = f_t * c_t_ + i_t * functions.tanh(np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c)
+		c_t = f_t * c_t_ + i_t * functions.tanh(np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c)
 		o_t = functions.sigmoid(np.dot(self.w_xo, x_t) + np.dot(self.w_ho, h_t_) + self.w_co * c_t_ + self.b_o)
-		self.h = o_t * functions.tanh(self.c)
-
+		h_t = o_t * functions.tanh(self.c)
+		
+		self.c_list.append(c_t)
+		self.h_list.append(h_t)
+		
+		self.c = c_t
+		self.h = h_t
+	
+	def get_h(self, timestamp: int):
+		return self.h_list[timestamp]
+	def get_c(self, timestamp: int):
+		return self.c_list[timestamp]
+		
 	def set_pointer2cell(self, cell, orientation: str):
-		if orientation == 'left':
-			self.left_cell = cell
-		elif orientation == 'down':
+		if orientation == 'down':
 			self.down_cell = cell
-		elif orientation == 'right':
-			self.right_cell = cell
 		elif orientation == 'up':
 			self.up_cell = cell
 			
 	def __str__(self):
+		# ver isso depois...
 		s = '      ' # 6 spaces
-		if self.up_cell != None: s += 'cell\n'
-		else: s += 'None\n'
-		if self.left_cell != None: s += 'cell  '
-		else: s += 'None  '
-		s += 'this  '
-		if self.right_cell != None: s += 'cell\n'
-		else: s += 'None\n'
-		s += '      '
-		if self.down_cell != None: s += 'cell\n'
-		else: s += 'None\n'
 		return s
