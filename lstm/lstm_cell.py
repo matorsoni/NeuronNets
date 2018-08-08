@@ -44,7 +44,7 @@ class LSTM_Cell:
 		self.c = np.zeros([input_length, 1]) # this cell's state variable 
 		self.h = np.zeros([input_length, 1]) # this cell's output variable 
 
-	def update(self, x_t): ### TIRAR ESSES POINTERS TO CELL, 
+	def compute(self, x_t): 
 		# Funcion H in the paper, computes the action of a cell by updating its c and h
 		# input must be colum np.arrays
 		assert x_t.shape == (self.input_length, 1), "incompatible x_t format"
@@ -60,7 +60,7 @@ class LSTM_Cell:
 		f_t = functions.sigmoid(np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f)
 		c_t = f_t * c_t_ + i_t * functions.tanh(np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c)
 		o_t = functions.sigmoid(np.dot(self.w_xo, x_t) + np.dot(self.w_ho, h_t_) + self.w_co * c_t_ + self.b_o)
-		h_t = o_t * functions.tanh(self.c)
+		h_t = o_t * functions.tanh(c_t)
 		
 		self.c_list.append(c_t)
 		self.h_list.append(h_t)

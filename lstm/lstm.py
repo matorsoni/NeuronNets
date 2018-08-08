@@ -1,3 +1,4 @@
+from copy import deepcopy
 from lstm_cell import *
 
 class LSTM(object):
@@ -31,30 +32,30 @@ class LSTM(object):
 		assert len(x_inputs) == self.T, 'Incompatible number of x_inputs'
 		output_list = []
 		for t in range(self.T):
-		
+			
 			for n in range(self.n_layers):
 				if n==0: # if it's the first hidden layer there is no n-1
 					if t==0: # if it's the first input there is no t-1
-						self.cells[n].update(np.dot(self.W_ih[n], x_inputs[t]) + self.b_h[n])
+						self.cells[n].compute(np.dot(self.W_ih[n], x_inputs[t]) + self.b_h[n])
 					else:
-						self.cells[n].update(
+						self.cells[n].compute(
 							np.dot(self.W_ih[n], x_inputs[t]) + np.dot(self.W_hh[n], self.cells[n].get_h(-1)) + 
 							self.b_h[n]	)
 				else:
 					if t==0:
-						self.cells[n].update(np.dot(self.W_ih[n], x_inputs[t]) + 
-							np.dot(self.W_h_h[n-1], self.cells[n-1].h) + self.b_h[n])
+						self.cells[n].compute(np.dot(self.W_ih[n], x_inputs[t]) + 
+							np.dot(self.W_h_h[n-1], self.cells[n-1].get_h(-1)) + self.b_h[n])
 					else:
-						self.cells[n].update(
+						self.cells[n].compute(
 							np.dot(self.W_ih[n], x_inputs[t]) + np.dot(self.W_hh[n], self.cells[n].get_h(-1)) + 
 							np.dot(self.W_h_h[n-1], self.cells[n-1].get_h(-1)) + self.b_h[n]
 							)
 			
 			y = self.b_y
-			print(t)
 			for n in range(self.n_layers):
 				y += np.dot(self.W_hy[n], self.cells[n].get_h(-1))
-			output_list.append(y)  # Actually it is Y(y), the output layer function !!!! (what is this, exactly?)
+			
+			output_list.append(deepcopy(y))  # Actually it is Y(y), the output layer function !!!! (what is this, exactly?)
 		
 		return output_list # esse outputlist ta sempre com T elementos....
 		

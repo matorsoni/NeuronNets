@@ -26,9 +26,12 @@ def main():
 	for i in range(n_in):
 		inputs.append(np.zeros([input_length, 1]))
 	
-	out = lstm.forward_pass(inputs)
+	out = lstm.forward_pass(inputs) # todos outputs tao iguais, mudar isso
 	for o in out:
 		print(o)
+		
+	#print(lstm.cells[0].h_list)
+	#print(lstm.cells[1].h_list)
 
 if __name__ == "__main__":
 	main()
