@@ -1,18 +1,18 @@
 from copy import deepcopy
-from lstm_cell import *
+from lstm_block import *
 
 class LSTM(object):
-	def __init__(self, T, n_out, n_layers, input_length):
+	def __init__(self, T: int, n_out:int, n_layers: int, n_mem_cells: int, input_length: int):
 		'''
 
 		'''
 		assert T >= n_out, "Incompatible numbers of outputs and forward layers"
-		assert n_layers >= 1, "Hidden layers >= 1"
+		assert n_layers >= 1, "Hidden layers must be >= 1"
 		self.T = T
 		self.n_out = n_out
 		self.n_layers = n_layers
 		
-		self.cells = [LSTM_Cell(input_length) for n in range(n_layers)]
+		self.cells = [LSTM_Block(n_mem_cells, input_length) for n in range(n_layers)]
 
 		# linking all the cells
 		for n in range(n_layers):
