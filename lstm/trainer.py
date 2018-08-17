@@ -60,6 +60,8 @@ class LSTM_Trainer:
 	def forward_backward_prop(self, cost_function:str = 'MSE', w_type:str, x_t, l_t):
 		# forward prop:
 		in_i, in_f, in_o, in_z, c_t, h_t = self.lstm.block.compute(x_t, True)
+		c_t_ = self.lstm.block.get_c(0)
+		h_t_ = self.lstm.block.get_h(0)
 		y_t = sigmoid(np.dot(self.lstm.w_hy, h_t) + self.lstm.b_y)
 		
 		# backprop:
@@ -67,7 +69,18 @@ class LSTM_Trainer:
 			delta_h = np.dot( row(y_t-l_t), self.lstm.d_Y(np.dot(self.lstm.w_hy, h_t) + self.lstm.b_y) * self.lstm.w_hy )
 		
 		## output gate
+		aux_o = delta_h * tanh(c_t) * d_sigmoid(in_o)
+		self.d_cost.d_w_xo = aux_o * vec2mat(x_t)
+		self.d_cost.d_w_ho = aux_o * vec2mat(h_t_)
+		self.d_cost.d_w_co = col(aux_o) * c_t_
+		self.d_cost.d_b_o = col(aux_o)
+		##
+		## gradient of the cell state c_t
 		
+		##
+		## rest of the gates
+		
+		##
 	
 	def train(self, x_inputs:list, learning_rate, batch_size:int, epochs:int):
 		pass
