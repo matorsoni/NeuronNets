@@ -1,9 +1,6 @@
-from functions import *
+from tools import *
 
 from copy import deepcopy
-
-class Gate: # One input, output and forget gates for each LSTM Bloc
-	pass 
 
 class Mem_Cell:
 	def __init__(self, input_length: int):
@@ -25,9 +22,8 @@ class LSTM_Block:
 		# pointers to neighbour cells 
 		#assert len(input_block) == 1, "Must have 1 input cell, can be None"
 		#assert len(output_block) == 1, "Must have 1 output cell, can be None"
-		
-		self.down_block = input_block
-		self.up_block = output_block
+		#self.down_block = input_block
+		#self.up_block = output_block
 		
 		self.input_length = input_length
 		self.n_mem_cells = n_mem_cells
@@ -58,7 +54,7 @@ class LSTM_Block:
 		#self.c = np.zeros([input_length, 1]) # this cell's state variable 
 		#self.h = np.zeros([input_length, 1]) # this cell's output variable 
 
-	def compute(self, x_t): 
+	def compute(self, x_t, returns:bool = False): 
 		# Funcion H in the paper, computes the action of a cell by updating its c and h
 		# input must be colum np.arrays
 		assert x_t.shape == (self.input_length, 1), "incompatible x_t format"
@@ -69,31 +65,43 @@ class LSTM_Block:
 		else:
 			c_t_ = np.zeros([self.input_length, 1])
 			h_t_ = np.zeros([self.input_length, 1])# should be zeros? 
-
-		i_t = functions.sigmoid(np.dot(self.w_xi, x_t) + np.dot(self.w_hi, h_t_) + self.w_ci * c_t_ + self.b_i)
-		f_t = functions.sigmoid(np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f)
-		o_t = functions.sigmoid(np.dot(self.w_xo, x_t) + np.dot(self.w_ho, h_t_) + self.w_co * c_t_ + self.b_o)
-		z_t = functions.tanh(np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c) # cell's input
+			
+		in_i = np.dot(self.w_xi, x_t) + np.dot(self.w_hi, h_t_) + self.w_ci * c_t_ + self.b_i
+		i_t = sigmoid(in_i)
+		in_f = np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f
+		f_t = sigmoid(in_f)
+		in_o = np.dot(self.w_xo, x_t) + np.dot(self.w_ho, h_t_) + self.w_co * c_t_ + self.b_o
+		o_t = sigmoid(in_o)
+		in_z = np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c
+		z_t = tanh(in_z) # cell's input
 		c_t = f_t * c_t_ + i_t * z_t
-		h_t = o_t * functions.tanh(c_t) # no paper não tem esse tanh
+		h_t = o_t * tanh(c_t) # no paper não tem esse tanh
 		
 		self.c_list.append(deepcopy(c_t))
 		self.h_list.append(deepcopy(h_t))
+		# only keeps the current values and the previous values
+		if len(self.c_list)>2 and len(self.h_list)>2 :
+			self.c_list.pop(0)
+			self.h_list.pop(0)
+			
+		if returns:
+			return in_i, in_f, in_o, in_z, c_t, h_t # these are more useful then i_t, f_t, ...,  for backprop
+		
 		#self.c = c_t
 		#self.h = h_t
 		
-	def compute2(self, x_t, c_t_, h_t_): # testing which "compute" is better
+	def compute_(self, x_t, c_t_, h_t_): # testing which "compute" is better
 		# Funcion H in the paper, computes the action of a cell by updating its c and h
 		# input must be colum np.arrays
 		assert x_t.shape == (self.input_length, 1), "incompatible x_t format"
 		assert c_t_.shape == (self.input_length, 1), "incompatible c_t_ format"
 		assert h_t_.shape == (self.input_length, 1), "incompatible h_t_ format"
 
-		i_t = functions.sigmoid(np.dot(self.w_xi, x_t) + np.dot(self.w_hi, h_t_) + self.w_ci * c_t_ + self.b_i)
-		f_t = functions.sigmoid(np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f)
-		c_t = f_t * c_t_ + i_t * functions.tanh(np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c)
-		o_t = functions.sigmoid(np.dot(self.w_xo, x_t) + np.dot(self.w_ho, h_t_) + self.w_co * c_t_ + self.b_o)
-		h_t = o_t * functions.tanh(c_t) # no paper não tem esse tanh
+		i_t = sigmoid(np.dot(self.w_xi, x_t) + np.dot(self.w_hi, h_t_) + self.w_ci * c_t_ + self.b_i)
+		f_t = sigmoid(np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f)
+		c_t = f_t * c_t_ + i_t * tanh(np.dot(self.w_xc, x_t) + np.dot(self.w_hc, h_t_) + self.b_c)
+		o_t = sigmoid(np.dot(self.w_xo, x_t) + np.dot(self.w_ho, h_t_) + self.w_co * c_t_ + self.b_o)
+		h_t = o_t * tanh(c_t) # no paper não tem esse tanh
 		
 		self.c_list.append(c_t)
 		self.h_list.append(h_t)
