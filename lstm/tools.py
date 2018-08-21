@@ -45,3 +45,28 @@ def vec2mat(v):
 		v = row(v)
 	return np.array([v for i in range(v.size)])
 
+def vec2zero_mat(v, k:int):
+	# constructs a matrix whose rows are 0 except for the k-th row, which is v
+	assert k<v.size
+	if v.shape == (v.size,1):
+		v = row(v)
+	m = np.zeros([v.size, v.size])
+	m[k] = v
+	return m
+	
+def vec2diag_mat(v):
+	return np.diagflat(v).reshape(v.size, v.size, 1)
+
+def vec2ten(v):
+	# constructs a tensor whose k-th matrix is a zero matrix with v as the k-th row
+	if v.shape == (v.size,1):
+		v = row(v)
+	return np.array([vec2zero_mat(v, i) for i in range(v.size)])
+		
+	
+def vec_dot_ten(vec, ten):
+	assert vec.size == ten.shape[0]
+	return np.array([vec[k]*ten[k] for k in range(vec.size)])
+	
+
+

@@ -14,7 +14,7 @@ class LSTM:
 		#self.W_ih = np.random.randn(input_length, input_length) # weighted input x_t
 		#self.W_hh = np.random.randn(input_length, input_length) # weighted recurrent input h_t_
 		#self.b_h = np.random.randn(input_length, 1) # biased recurrent input
-		self.W_hy = np.random.randn(input_length, input_length) # weighted output y_t
+		self.w_hy = np.random.randn(input_length, input_length) # weighted output y_t
 		self.b_y = np.random.randn(input_length, 1) # biased output y_t
 	
 	def forward_pass(self, x_inputs:list):
@@ -31,7 +31,7 @@ class LSTM:
 					self.b_h	)
 			'''
 			self.block.compute(x_inputs[t])
-			y = self.Y(self.b_y + np.dot(self.W_hy, self.block.get_h(-1))) # Y(y), Y=sigmoid -> can be changed
+			y = self.Y(self.b_y + np.dot(self.w_hy, self.block.get_h(-1))) # Y(y), Y=sigmoid -> can be changed
 			
 			output_list.append(deepcopy(y))  
 		
