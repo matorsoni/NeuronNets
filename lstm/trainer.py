@@ -48,7 +48,7 @@ class d_Cost:
 		self.d_b_c = np.zeros([input_length, 1])
 		
 		# external weights
-		self.d_W_hy = np.zeros([input_length, input_length])
+		self.d_w_hy = np.zeros([input_length, input_length])
 		self.d_b_y = np.zeros([input_length, 1])
 
 class LSTM_Trainer:
@@ -95,7 +95,8 @@ class LSTM_Trainer:
 		
 		if cost_function == 'MSE':
 			# delta_h = row vector
-			delta_h = np.dot( row(y_t-l_t), self.lstm.d_Y(np.dot(self.lstm.w_hy, h_t) + self.lstm.b_y) * self.lstm.w_hy )
+			dE_dy = y_t-l_t
+			delta_h = np.dot( row(dE_dy), self.lstm.d_Y(np.dot(self.lstm.w_hy, h_t) + self.lstm.b_y) * self.lstm.w_hy )
 		aux = o_t * d_tanh(c_t)
 		
 		### input gate
@@ -121,17 +122,43 @@ class LSTM_Trainer:
 		### output gate
 		#aux_o = delta_h * tanh(c_t) * d_sigmoid(in_o) # acho que é col(delta_h) * ......
 		aux_o = col(delta_h) * tanh(c_t) * d_sigmoid(in_o)
-		self.d_cost.d_w_xo = aux_o * vec2mat(x_t)
-		self.d_cost.d_w_ho = aux_o * vec2mat(h_t_)
+		self.d_cost.d_w_xo = aux_o * vec2full_mat(x_t)
+		self.d_cost.d_w_ho = aux_o * vec2full_mat(h_t_)
 		self.d_cost.d_w_co = aux_o * c_t_
 		self.d_cost.d_b_o = aux_o
 		###
 		
 		### lstm output weights
-		
+		aux_y = dE_dy * self.lstm.d_Y(np.dot(self.lstm.w_hy, h_t) + self.lstm.b_y)
+		self.d_cost.d_w_hy = aux_y * vec2full_mat(h_t)
+		self.d_cost.d_b_y = aux_y
 		###
 	
+	def update_weights(self, learning_rate):
+		self.lstm.block.w_xi += learning_rate * self.d_cost.d_w_xi 
+		self.lstm.block.w_hi += learning_rate * self.d_cost.d_w_hi 
+		self.lstm.block.w_ci += learning_rate * self.d_cost.d_w_ci 
+		self.lstm.block.b_i += learning_rate * self.d_cost.d_b_i 
+		
+		self.lstm.block.w_xf += learning_rate * self.d_cost.d_w_xf 
+		self.lstm.block.w_hf += learning_rate * self.d_cost.d_w_hf 
+		self.lstm.block.w_cf += learning_rate * self.d_cost.d_w_cf 
+		self.lstm.block.b_f += learning_rate * self.d_cost.d_b_f 
+		
+		self.lstm.block.w_xo += learning_rate * self.d_cost.d_w_xo 
+		self.lstm.block.w_ho += learning_rate * self.d_cost.d_w_ho 
+		self.lstm.block.w_co += learning_rate * self.d_cost.d_w_co 
+		self.lstm.block.b_o += learning_rate * self.d_cost.d_b_o 
+		
+		self.lstm.block.w_xc += learning_rate * self.d_cost.d_w_xc 
+		self.lstm.block.w_hc += learning_rate * self.d_cost.d_w_hc 
+		self.lstm.block.b_c += learning_rate * self.d_cost.d_b_c 
+		
+		self.lstm.w_hy += learning_rate * self.d_cost.d_w_hy
+		self.lstm.b_y += learning_rate * self.d_cost.d_b_y
+
 	def train(self, x_inputs:list, learning_rate, batch_size:int, epochs:int):
+		
 		pass
 		
 		

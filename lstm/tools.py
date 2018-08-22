@@ -39,7 +39,7 @@ def col(v):
 def row(v):
 	return v.reshape(v.size)
 
-def vec2mat(v):
+def vec2full_mat(v):
 	# constructs a matrix whose rows are v
 	if v.shape == (v.size,1):
 		v = row(v)
