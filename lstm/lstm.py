@@ -1,11 +1,11 @@
 from lstm_block import *
 
 class LSTM:
-	def __init__(self, T: int, input_length: int, y_activation = 'sigmoid'):
+	def __init__(self, input_length: int, y_activation = 'sigmoid'):
 		'''
 		Simplest version of a LSTM (with peepholes), see figures at https://medium.com/@shiyan/materials-to-understand-lstm-34387d6454c1
+		T = total number of timestamps 
 		'''
-		self.T = T
 		self.input_length = input_length
 		self.block = LSTM_Block(1, input_length)
 		self.Y, self.d_Y = choose(y_activation)
@@ -17,11 +17,14 @@ class LSTM:
 		self.w_hy = np.random.randn(input_length, input_length) # weighted output y_t
 		self.b_y = np.random.randn(input_length, 1) # biased output y_t
 	
+	def initialize(self):
+		self.block.compute(np.zeros([self.input_length, 1]))
+		
+		
 	def forward_pass(self, x_inputs:list):
 		# input = list[x_0, x_1, x_2, ...], x_i = column np.array
-		assert len(x_inputs) == self.T, 'Incompatible number of x_inputs'
 		output_list = []
-		for t in range(self.T):
+		for t in range(len(x_inputs)):
 			'''
 			if t==0: # Acho que o primeiro pass deve ser com x = zeros()
 				self.block.compute(np.dot(self.W_ih, x_inputs[t]) + self.b_h)

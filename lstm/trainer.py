@@ -22,7 +22,7 @@ class d_Cell:
 		self.d_w_hc = np.zeros([input_length, input_length, input_length])
 		self.d_b_c = np.zeros([input_length, input_length, 1])
 
-class d_Cost:
+class Gradient:
 	"""
 	Container class for dE_t/d_W for each W, aka the total gradient at timestamp t. 
 	"""
@@ -55,12 +55,12 @@ class LSTM_Trainer:
 	def __init__(self, lstm : LSTM):
 		self.lstm = lstm
 		self.d_cell = d_Cell(lstm.input_length)
-		self.d_cost = d_Cost(lstm.input_length)
+		self.gradient = Gradient(lstm.input_length)
 		# colocar as d_w da lstm 
 	
 	def forward_backward_prop(self, x_t, l_t, cost_function:str = 'MSE'):
 		'''
-		Calculates the total gradient and updates d_cost 
+		Calculates the total gradient and updates gradient 
 		'''
 		# forward prop:
 		in_i, in_f, in_o, in_z, c_t, h_t = self.lstm.block.compute(x_t, True)
@@ -100,66 +100,91 @@ class LSTM_Trainer:
 		aux = o_t * d_tanh(c_t)
 		
 		### input gate
-		self.d_cost.d_w_xi = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_xi), axes=1)
-		self.d_cost.d_w_hi = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_hi), axes=1)
-		self.d_cost.d_w_ci = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_ci), axes=1)
-		self.d_cost.d_b_i = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_b_i), axes=1)
+		self.gradient.d_w_xi = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_xi), axes=1)
+		self.gradient.d_w_hi = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_hi), axes=1)
+		self.gradient.d_w_ci = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_ci), axes=1)
+		self.gradient.d_b_i = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_b_i), axes=1)
 		###
 		
 		### forget gate
-		self.d_cost.d_w_xf = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_xf), axes=1)
-		self.d_cost.d_w_hf = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_hf), axes=1)
-		self.d_cost.d_w_cf = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_cf), axes=1)
-		self.d_cost.d_b_f = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_b_f), axes=1)
+		self.gradient.d_w_xf = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_xf), axes=1)
+		self.gradient.d_w_hf = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_hf), axes=1)
+		self.gradient.d_w_cf = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_cf), axes=1)
+		self.gradient.d_b_f = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_b_f), axes=1)
 		###
 		
 		### cell gate
-		self.d_cost.d_w_xc = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_xc), axes=1)
-		self.d_cost.d_w_hc = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_hc), axes=1)
-		self.d_cost.d_b_c = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_b_c), axes=1)
+		self.gradient.d_w_xc = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_xc), axes=1)
+		self.gradient.d_w_hc = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_w_hc), axes=1)
+		self.gradient.d_b_c = np.tensordot(delta_h, vec_dot_ten(aux, self.d_cell.d_b_c), axes=1)
 		###
 		
 		### output gate
 		#aux_o = delta_h * tanh(c_t) * d_sigmoid(in_o) # acho que é col(delta_h) * ......
 		aux_o = col(delta_h) * tanh(c_t) * d_sigmoid(in_o)
-		self.d_cost.d_w_xo = aux_o * vec2full_mat(x_t)
-		self.d_cost.d_w_ho = aux_o * vec2full_mat(h_t_)
-		self.d_cost.d_w_co = aux_o * c_t_
-		self.d_cost.d_b_o = aux_o
+		self.gradient.d_w_xo = aux_o * vec2full_mat(x_t)
+		self.gradient.d_w_ho = aux_o * vec2full_mat(h_t_)
+		self.gradient.d_w_co = aux_o * c_t_
+		self.gradient.d_b_o = aux_o
 		###
 		
 		### lstm output weights
 		aux_y = dE_dy * self.lstm.d_Y(np.dot(self.lstm.w_hy, h_t) + self.lstm.b_y)
-		self.d_cost.d_w_hy = aux_y * vec2full_mat(h_t)
-		self.d_cost.d_b_y = aux_y
+		self.gradient.d_w_hy = aux_y * vec2full_mat(h_t)
+		self.gradient.d_b_y = aux_y
 		###
 	
 	def update_weights(self, learning_rate):
-		self.lstm.block.w_xi += learning_rate * self.d_cost.d_w_xi 
-		self.lstm.block.w_hi += learning_rate * self.d_cost.d_w_hi 
-		self.lstm.block.w_ci += learning_rate * self.d_cost.d_w_ci 
-		self.lstm.block.b_i += learning_rate * self.d_cost.d_b_i 
+		self.lstm.block.w_xi += learning_rate * self.gradient.d_w_xi 
+		self.lstm.block.w_hi += learning_rate * self.gradient.d_w_hi 
+		self.lstm.block.w_ci += learning_rate * self.gradient.d_w_ci 
+		self.lstm.block.b_i += learning_rate * self.gradient.d_b_i 
 		
-		self.lstm.block.w_xf += learning_rate * self.d_cost.d_w_xf 
-		self.lstm.block.w_hf += learning_rate * self.d_cost.d_w_hf 
-		self.lstm.block.w_cf += learning_rate * self.d_cost.d_w_cf 
-		self.lstm.block.b_f += learning_rate * self.d_cost.d_b_f 
+		self.lstm.block.w_xf += learning_rate * self.gradient.d_w_xf 
+		self.lstm.block.w_hf += learning_rate * self.gradient.d_w_hf 
+		self.lstm.block.w_cf += learning_rate * self.gradient.d_w_cf 
+		self.lstm.block.b_f += learning_rate * self.gradient.d_b_f 
 		
-		self.lstm.block.w_xo += learning_rate * self.d_cost.d_w_xo 
-		self.lstm.block.w_ho += learning_rate * self.d_cost.d_w_ho 
-		self.lstm.block.w_co += learning_rate * self.d_cost.d_w_co 
-		self.lstm.block.b_o += learning_rate * self.d_cost.d_b_o 
+		self.lstm.block.w_xo += learning_rate * self.gradient.d_w_xo 
+		self.lstm.block.w_ho += learning_rate * self.gradient.d_w_ho 
+		self.lstm.block.w_co += learning_rate * self.gradient.d_w_co 
+		self.lstm.block.b_o += learning_rate * self.gradient.d_b_o 
 		
-		self.lstm.block.w_xc += learning_rate * self.d_cost.d_w_xc 
-		self.lstm.block.w_hc += learning_rate * self.d_cost.d_w_hc 
-		self.lstm.block.b_c += learning_rate * self.d_cost.d_b_c 
+		self.lstm.block.w_xc += learning_rate * self.gradient.d_w_xc 
+		self.lstm.block.w_hc += learning_rate * self.gradient.d_w_hc 
+		self.lstm.block.b_c += learning_rate * self.gradient.d_b_c 
 		
-		self.lstm.w_hy += learning_rate * self.d_cost.d_w_hy
-		self.lstm.b_y += learning_rate * self.d_cost.d_b_y
+		self.lstm.w_hy += learning_rate * self.gradient.d_w_hy
+		self.lstm.b_y += learning_rate * self.gradient.d_b_y
 
-	def train(self, x_inputs:list, learning_rate, batch_size:int, epochs:int):
+	def train(self, x_inputs:list, learning_rate, batch_size:int, n_epochs:int):
+		'''
 		
-		pass
+		'''
+		n_examples = len(x_inputs)
+		assert batch_size <= n_examples
+		# every batch runs through batch_size+1 inputs (we take x[t] as input and x[t+1] as label)
+		# so the possible starting points are n_examples - batch_size + 1 - 1 
+		n_starting_points = n_examples - batch_size
+		
+		for epoch in range(n_epochs):
+			print( ('Epoch '+'{} / {}').format(epoch+1, n_epochs) )
+			list_starting_points = list(range(n_starting_points))
+			
+			# randomly picks all possible starting points
+			while len(list_starting_points) > 0:
+				print(len(list_starting_points))
+				self.lstm.initialize()
+				t0 = select_and_pop(list_starting_points)
+				for i in range(batch_size):
+					self.forward_backward_prop(x_inputs[t0+i], x_inputs[t0+i+1])
+					self.update_weights(learning_rate)
+				
+				
+			
+			
+			
+		
 		
 		
 		

@@ -1,7 +1,5 @@
 from tools import *
 
-from copy import deepcopy
-
 class Mem_Cell:
 	def __init__(self, input_length: int):
 		pass

@@ -1,7 +1,8 @@
 import numpy as np
+from copy import deepcopy
 
 
-# functions
+### functions
 def sigmoid(z):
 	return 1./(1.+np.exp(-z))
 	
@@ -32,7 +33,7 @@ def choose(func_name = 'sigmoid'):
 		print("Invalid function name:" + func_name)
 		return 0;
 
-# matrix algebra
+### matrix algebra
 def col(v):
 	return v.reshape(v.size,1)
 	
@@ -67,6 +68,13 @@ def vec2ten(v):
 def vec_dot_ten(vec, ten):
 	assert vec.size == ten.shape[0]
 	return np.array([vec[k]*ten[k] for k in range(vec.size)])
+	
+### miscellaneous
+def select_and_pop(l:list):
+	random_index = np.random.randint(0, len(l)) # random int ranging from 0 to len()-1
+	random_choice = l[random_index]
+	l.pop(random_index)
+	return random_choice
 	
 
 
