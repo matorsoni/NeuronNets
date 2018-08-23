@@ -20,22 +20,15 @@ class LSTM:
 	def initialize(self):
 		self.block.compute(np.zeros([self.input_length, 1]))
 		
-		
+	def single_forward_pass(self, x_t):
+		self.block.compute(x_t)
+		y = self.Y(self.b_y + np.dot(self.w_hy, self.block.get_h(-1))) # Y(y), Y=sigmoid -> can be changed
+		return y
 	def forward_pass(self, x_inputs:list):
 		# input = list[x_0, x_1, x_2, ...], x_i = column np.array
 		output_list = []
 		for t in range(len(x_inputs)):
-			'''
-			if t==0: # Acho que o primeiro pass deve ser com x = zeros()
-				self.block.compute(np.dot(self.W_ih, x_inputs[t]) + self.b_h)
-			else:
-				self.block.compute(
-					np.dot(self.W_ih, x_inputs[t]) + np.dot(self.W_hh, self.block.get_h(-1)) + 
-					self.b_h	)
-			'''
-			self.block.compute(x_inputs[t])
-			y = self.Y(self.b_y + np.dot(self.w_hy, self.block.get_h(-1))) # Y(y), Y=sigmoid -> can be changed
-			
+			y = self.single_forward_pass(x_inputs[t])
 			output_list.append(deepcopy(y))  
 		
 		return output_list

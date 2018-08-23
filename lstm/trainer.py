@@ -135,27 +135,27 @@ class LSTM_Trainer:
 		###
 	
 	def update_weights(self, learning_rate):
-		self.lstm.block.w_xi += learning_rate * self.gradient.d_w_xi 
-		self.lstm.block.w_hi += learning_rate * self.gradient.d_w_hi 
-		self.lstm.block.w_ci += learning_rate * self.gradient.d_w_ci 
-		self.lstm.block.b_i += learning_rate * self.gradient.d_b_i 
+		self.lstm.block.w_xi += -learning_rate * self.gradient.d_w_xi 
+		self.lstm.block.w_hi += -learning_rate * self.gradient.d_w_hi 
+		self.lstm.block.w_ci += -learning_rate * self.gradient.d_w_ci 
+		self.lstm.block.b_i += -learning_rate * self.gradient.d_b_i 
 		
-		self.lstm.block.w_xf += learning_rate * self.gradient.d_w_xf 
-		self.lstm.block.w_hf += learning_rate * self.gradient.d_w_hf 
-		self.lstm.block.w_cf += learning_rate * self.gradient.d_w_cf 
-		self.lstm.block.b_f += learning_rate * self.gradient.d_b_f 
+		self.lstm.block.w_xf += -learning_rate * self.gradient.d_w_xf 
+		self.lstm.block.w_hf += -learning_rate * self.gradient.d_w_hf 
+		self.lstm.block.w_cf += -learning_rate * self.gradient.d_w_cf 
+		self.lstm.block.b_f += -learning_rate * self.gradient.d_b_f 
 		
-		self.lstm.block.w_xo += learning_rate * self.gradient.d_w_xo 
-		self.lstm.block.w_ho += learning_rate * self.gradient.d_w_ho 
-		self.lstm.block.w_co += learning_rate * self.gradient.d_w_co 
-		self.lstm.block.b_o += learning_rate * self.gradient.d_b_o 
+		self.lstm.block.w_xo += -learning_rate * self.gradient.d_w_xo 
+		self.lstm.block.w_ho += -learning_rate * self.gradient.d_w_ho 
+		self.lstm.block.w_co += -learning_rate * self.gradient.d_w_co 
+		self.lstm.block.b_o += -learning_rate * self.gradient.d_b_o 
 		
-		self.lstm.block.w_xc += learning_rate * self.gradient.d_w_xc 
-		self.lstm.block.w_hc += learning_rate * self.gradient.d_w_hc 
-		self.lstm.block.b_c += learning_rate * self.gradient.d_b_c 
+		self.lstm.block.w_xc += -learning_rate * self.gradient.d_w_xc 
+		self.lstm.block.w_hc += -learning_rate * self.gradient.d_w_hc 
+		self.lstm.block.b_c += -learning_rate * self.gradient.d_b_c 
 		
-		self.lstm.w_hy += learning_rate * self.gradient.d_w_hy
-		self.lstm.b_y += learning_rate * self.gradient.d_b_y
+		self.lstm.w_hy += -learning_rate * self.gradient.d_w_hy
+		self.lstm.b_y += -learning_rate * self.gradient.d_b_y
 
 	def train(self, x_inputs:list, learning_rate, batch_size:int, n_epochs:int):
 		'''
@@ -173,7 +173,7 @@ class LSTM_Trainer:
 			
 			# randomly picks all possible starting points
 			while len(list_starting_points) > 0:
-				print(len(list_starting_points))
+				#print(len(list_starting_points))
 				self.lstm.initialize()
 				t0 = select_and_pop(list_starting_points)
 				for i in range(batch_size):

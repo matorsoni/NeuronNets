@@ -1,8 +1,8 @@
 from trainer import *
 
 
-n_training_examples = 100
-input_length = 100
+n_training_examples = 10
+input_length = 10
 lstm = LSTM(input_length)
 
 # create list of inputs
@@ -19,4 +19,7 @@ out = lstm.forward_pass(x_inputs)
 trainer = LSTM_Trainer(lstm)
 trainer.forward_backward_prop(x_inputs[0], x_inputs[1])
 
-trainer.train(x_inputs, learning_rate=0.001, batch_size=20, n_epochs=10)
+trainer.train(x_inputs, learning_rate=0.0001, batch_size=5, n_epochs=1000)
+print(x_inputs[0])
+print(lstm.single_forward_pass(x_inputs[0]))
+print(x_inputs[1])
