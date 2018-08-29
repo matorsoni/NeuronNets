@@ -56,6 +56,7 @@ def vec2zero_mat(v, k:int):
 	return m
 	
 def vec2diag_mat(v):
+	# just a redimensioned diagonal matrix whose diag is the vector v 
 	return np.diagflat(v).reshape(v.size, v.size, 1)
 
 def vec2ten(v):
@@ -66,11 +67,13 @@ def vec2ten(v):
 		
 	
 def vec_dot_ten(vec, ten):
+	# constructs a new tensor with the same dimensions as ten
 	assert vec.size == ten.shape[0]
 	return np.array([vec[k]*ten[k] for k in range(vec.size)])
 	
 ### miscellaneous
 def select_and_pop(l:list):
+	# chooses a random value in the list and pop it
 	random_index = np.random.randint(0, len(l)) # random int ranging from 0 to len()-1
 	random_choice = l[random_index]
 	l.pop(random_index)
