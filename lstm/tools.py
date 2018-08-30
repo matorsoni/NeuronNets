@@ -40,18 +40,18 @@ def col(v):
 def row(v):
 	return v.reshape(v.size)
 
-def vec2full_mat(v):
+def vec2full_mat(v, n_rows: int):
 	# constructs a matrix whose rows are v
 	if v.shape == (v.size,1):
 		v = row(v)
-	return np.array([v for i in range(v.size)])
+	return np.array([v for i in range(n_rows)])
 
-def vec2zero_mat(v, k:int):
+def vec2zero_mat(v, n_rows:int, k: int):
 	# constructs a matrix whose rows are 0 except for the k-th row, which is v
-	assert k<v.size
+	assert k<n_rows
 	if v.shape == (v.size,1):
 		v = row(v)
-	m = np.zeros([v.size, v.size])
+	m = np.zeros([n_rows, v.size])
 	m[k] = v
 	return m
 	
@@ -59,11 +59,9 @@ def vec2diag_mat(v):
 	# just a redimensioned diagonal matrix whose diag is the vector v 
 	return np.diagflat(v).reshape(v.size, v.size, 1)
 
-def vec2ten(v):
-	# constructs a tensor whose k-th matrix is a zero matrix with v as the k-th row
-	if v.shape == (v.size,1):
-		v = row(v)
-	return np.array([vec2zero_mat(v, i) for i in range(v.size)])
+def vec2ten(v, n_rows):
+	# constructs a tensor whose k-th matrix is a zero matrix with v as the k-th row	
+	return np.array([vec2zero_mat(v, n_rows, i) for i in range(n_rows)])
 		
 	
 def vec_dot_ten(vec, ten):

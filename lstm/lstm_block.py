@@ -11,55 +11,47 @@ class LSTM_Block:
 	a_t = a_{t}
 	a_t_ = a_{t-1}
 	"""
-	def __init__(self, n_mem_cells: int, input_length: int, output_length: int,
-	input_block = None, output_block = None):
-		# pointers to neighbour cells 
-		#assert len(input_block) == 1, "Must have 1 input cell, can be None"
-		#assert len(output_block) == 1, "Must have 1 output cell, can be None"
-		#self.down_block = input_block
-		#self.up_block = output_block
+	def __init__(self, n_mem_cells: int, inp_size: int, out_size: int):
 		
-		self.input_length = input_length
-		self.output_length = output_length
+		self.inp_size = inp_size
+		self.out_size = out_size
 		self.n_mem_cells = n_mem_cells
-		#self.mem_cells = [                ] #construir essa lista mais tarde
+		#self.mem_cells = [                ] #construct this list later
 		
 		# input gate
-		self.w_xi = np.random.randn(output_length, input_length)
-		self.w_hi = np.random.randn(output_length, input_length)
-		self.w_ci = np.random.randn(output_length, 1) # diagonal matrix, so make it into a column vector
-		self.b_i = np.zeros([output_length, 1])
+		self.w_xi = np.random.randn(out_size, inp_size)
+		self.w_hi = np.random.randn(out_size, out_size)
+		self.w_ci = np.random.randn(out_size, 1) # diagonal matrix, so make it into a column vector
+		self.b_i = np.zeros([out_size, 1])
 		# forget gate
-		self.w_xf = np.random.randn(output_length, input_length)
-		self.w_hf = np.random.randn(output_length, input_length)
-		self.w_cf = np.random.randn(output_length, 1) # diagonal matrix, so make it into a column vector
-		self.b_f = np.zeros([output_length, 1])
+		self.w_xf = np.random.randn(out_size, inp_size)
+		self.w_hf = np.random.randn(out_size, out_size)
+		self.w_cf = np.random.randn(out_size, 1) # diagonal matrix, so make it into a column vector
+		self.b_f = np.zeros([out_size, 1])
 		# output gate
-		self.w_xo = np.random.randn(output_length, input_length)
-		self.w_ho = np.random.randn(output_length, input_length)
-		self.w_co = np.random.randn(output_length, 1) # diagonal matrix, so make it into a column vector
-		self.b_o = np.zeros([output_length, 1])
+		self.w_xo = np.random.randn(out_size, inp_size)
+		self.w_ho = np.random.randn(out_size, out_size)
+		self.w_co = np.random.randn(out_size, 1) # diagonal matrix, so make it into a column vector
+		self.b_o = np.zeros([out_size, 1])
 		# cell state
-		self.w_xc = np.random.randn(output_length, input_length)
-		self.w_hc = np.random.randn(output_length, input_length)
-		self.b_c = np.zeros([output_length, 1])
+		self.w_xc = np.random.randn(out_size, inp_size)
+		self.w_hc = np.random.randn(out_size, out_size)
+		self.b_c = np.zeros([out_size, 1])
 		
-		self.c_list = [] # list containing this cell's c state for every time stamp
-		self.h_list = [] # list containing this cell's h output for every time stamp
-		#self.c = np.zeros([input_length, 1]) # this cell's state variable 
-		#self.h = np.zeros([input_length, 1]) # this cell's output variable 
+		self.c_list = [] # list containing this cell's c state for the last 2 time stamps
+		self.h_list = [] # list containing this cell's h output for the last 2 time stamps
 
 	def compute(self, x_t, returns:bool = False): 
 		# Funcion H in the paper, computes the action of a cell by updating its c and h
 		# input must be colum np.arrays
-		assert x_t.shape == (self.input_length, 1), "incompatible x_t format"
+		assert x_t.shape == (self.inp_size, 1), "incompatible x_t format"
 
 		if len(self.c_list) != 0 and len(self.h_list) != 0:
 			c_t_ = self.c_list[-1] # last c computed
 			h_t_ = self.h_list[-1] # last h computed 
 		else:
-			c_t_ = np.zeros([self.output_length, 1])
-			h_t_ = np.zeros([self.output_length, 1])# should be zeros? 
+			c_t_ = np.zeros([self.out_size, 1])
+			h_t_ = np.zeros([self.out_size, 1])# should be zeros? 
 			
 		in_i = np.dot(self.w_xi, x_t) + np.dot(self.w_hi, h_t_) + self.w_ci * c_t_ + self.b_i
 		i_t = sigmoid(in_i)
@@ -82,15 +74,12 @@ class LSTM_Block:
 		if returns:
 			return in_i, in_f, in_o, in_z, c_t, h_t # these are more useful then i_t, f_t, ...,  for backprop
 		
-		#self.c = c_t
-		#self.h = h_t
-		
 	def compute_(self, x_t, c_t_, h_t_): # testing which "compute" is better
 		# Funcion H in the paper, computes the action of a cell by updating its c and h
 		# input must be colum np.arrays
-		assert x_t.shape == (self.input_length, 1), "incompatible x_t format"
-		assert c_t_.shape == (self.output_length, 1), "incompatible c_t_ format"
-		assert h_t_.shape == (self.output_length, 1), "incompatible h_t_ format"
+		assert x_t.shape == (self.inp_size, 1), "incompatible x_t format"
+		assert c_t_.shape == (self.out_size, 1), "incompatible c_t_ format"
+		assert h_t_.shape == (self.out_size, 1), "incompatible h_t_ format"
 
 		i_t = sigmoid(np.dot(self.w_xi, x_t) + np.dot(self.w_hi, h_t_) + self.w_ci * c_t_ + self.b_i)
 		f_t = sigmoid(np.dot(self.w_xf, x_t) + np.dot(self.w_hf, h_t_) + self.w_cf * c_t_ + self.b_f)
@@ -103,16 +92,10 @@ class LSTM_Block:
 	
 	def get_h(self, timestamp: int):
 		return self.h_list[timestamp]
+		
 	def get_c(self, timestamp: int):
 		return self.c_list[timestamp]
 		
-	def set_pointer2cell(self, cell, orientation: str):
-		if orientation == 'down':
-			self.down_cell = cell
-		elif orientation == 'up':
-			self.up_cell = cell
-			
-	def __str__(self):
-		# ver isso depois...
-		s = '      ' # 6 spaces
-		return s
+	def reset(self):
+		self.c_list.clear()
+		self.h_list.clear()
