@@ -1,8 +1,24 @@
 import numpy as np
 from copy import deepcopy
+import pickle
 
+### pickle ###
+dir = 'models/'
+ext = 'pkl'
+def save_model(model_object, file_name: str):
+	file = dir + file_name
+	if file_name.partition('.')[2] == '':
+		file += '.' + ext
+	pickle.dump(model_object, open(file, 'wb'))
+	
+def load_model(file_name: str):
+	file = dir + file_name
+	if file_name.partition('.')[2] == '':
+		file += '.' + ext
+	return pickle.load(open(file, 'rb'))
+##############
 
-### functions
+### functions ###
 def sigmoid(z):
 	return 1./(1.+np.exp(-z))
 	
@@ -20,7 +36,6 @@ def tanh(z):
 		
 def d_tanh(z):
 	return 1.-(np.tanh(z) * np.tanh(z)) 
-	
 
 def choose(func_name = 'sigmoid'):
 	if func_name == 'sigmoid':
@@ -32,8 +47,9 @@ def choose(func_name = 'sigmoid'):
 	else:
 		print("Invalid function name:" + func_name)
 		return 0;
+################
 
-### matrix algebra
+### matrix algebra ###
 def col(v):
 	return v.reshape(v.size,1)
 	
@@ -68,17 +84,18 @@ def vec_dot_ten(vec, ten):
 	# constructs a new tensor with the same dimensions as ten
 	assert vec.size == ten.shape[0]
 	return np.array([vec[k]*ten[k] for k in range(vec.size)])
+#########################
 	
-### miscellaneous
+### miscellaneous ###
 def select_and_pop(l:list):
 	# chooses a random value in the list and pop it
 	random_index = np.random.randint(0, len(l)) # random int ranging from 0 to len()-1
 	random_choice = l[random_index]
 	l.pop(random_index)
 	return random_choice
-	
+#####################
 
-### Classes
+### Classes ###
 class Cell_Gradient:
 	"""
 	Container class for dC_t/d_W of each cell.
@@ -102,18 +119,13 @@ class Cell_Gradient:
 		self.d_b_c = np.zeros([out_size, out_size, 1])
 		
 	def reset(self):
-		self.d_w_xi.fill(0.)
-		self.d_w_hi.fill(0.)
-		self.d_w_ci.fill(0.)
-		self.d_b_i.fill(0.)
+		self.d_w_xi.fill(0.);	self.d_w_hi.fill(0.)
+		self.d_w_ci.fill(0.);	self.d_b_i.fill(0.)
 
-		self.d_w_xf.fill(0.)
-		self.d_w_hf.fill(0.)
-		self.d_w_cf.fill(0.)
-		self.d_b_f.fill(0.)
+		self.d_w_xf.fill(0.);	self.d_w_hf.fill(0.)
+		self.d_w_cf.fill(0.);	self.d_b_f.fill(0.)
 
-		self.d_w_xc.fill(0.)
-		self.d_w_hc.fill(0.)
+		self.d_w_xc.fill(0.);	self.d_w_hc.fill(0.)
 		self.d_b_c.fill(0.)
 
 class Gradient(object):	
@@ -168,6 +180,5 @@ class Gradient(object):
 		self.d_b_c /= factor
 
 		self.d_w_hy /= factor;	self.d_b_y /= factor
-	
-
+###########
 

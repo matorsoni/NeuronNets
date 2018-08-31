@@ -1,5 +1,6 @@
 from lstm_block import *
 
+
 class LSTM:
 	def __init__(self, inp_size: int, out_size: int, y_activation = 'sigmoid'):
 		'''
@@ -37,5 +38,3 @@ class LSTM:
 	
 	def reset_block(self):
 		self.block.reset()
-	#def save_model(self):
-		#pickle
