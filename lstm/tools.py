@@ -78,4 +78,96 @@ def select_and_pop(l:list):
 	return random_choice
 	
 
+### Classes
+class Cell_Gradient:
+	"""
+	Container class for dC_t/d_W of each cell.
+	"""
+	def __init__(self, inp_size: int, out_size: int):
+		# gates
+		# C is independent of the Output gate
+		self.d_w_xi = np.zeros([out_size, out_size, inp_size])
+		self.d_w_hi = np.zeros([out_size, out_size, out_size])
+		self.d_w_ci = np.zeros([out_size, out_size, 1]) # diagonal matrix, so make it into a column vector
+		self.d_b_i = np.zeros([out_size, out_size, 1])
+
+		self.d_w_xf = np.zeros([out_size, out_size, inp_size])
+		self.d_w_hf = np.zeros([out_size, out_size, out_size])
+		self.d_w_cf = np.zeros([out_size, out_size, 1]) # diagonal matrix, so make it into a column vector
+		self.d_b_f = np.zeros([out_size, out_size, 1])
+		
+		# external weights
+		self.d_w_xc = np.zeros([out_size, out_size, inp_size])
+		self.d_w_hc = np.zeros([out_size, out_size, out_size])
+		self.d_b_c = np.zeros([out_size, out_size, 1])
+		
+	def reset(self):
+		self.d_w_xi.fill(0.)
+		self.d_w_hi.fill(0.)
+		self.d_w_ci.fill(0.)
+		self.d_b_i.fill(0.)
+
+		self.d_w_xf.fill(0.)
+		self.d_w_hf.fill(0.)
+		self.d_w_cf.fill(0.)
+		self.d_b_f.fill(0.)
+
+		self.d_w_xc.fill(0.)
+		self.d_w_hc.fill(0.)
+		self.d_b_c.fill(0.)
+
+class Gradient(object):	
+	"""
+	Container class for dE_t/d_W for each W, aka the total gradient at timestamp t. 
+	"""
+	def __init__(self, inp_size: int, out_size: int):
+		# gates
+		self.d_w_xi = np.zeros([out_size, inp_size]);	self.d_w_hi = np.zeros([out_size, out_size])
+		self.d_w_ci = np.zeros([out_size, 1]);	self.d_b_i = np.zeros([out_size, 1])
+
+		self.d_w_xf = np.zeros([out_size, inp_size]);	self.d_w_hf = np.zeros([out_size, out_size])
+		self.d_w_cf = np.zeros([out_size, 1]);	self.d_b_f = np.zeros([out_size, 1])
+
+		self.d_w_xo = np.zeros([out_size, inp_size]);	self.d_w_ho = np.zeros([out_size, out_size])
+		self.d_w_co = np.zeros([out_size, 1]);	self.d_b_o = np.zeros([out_size, 1])
+		
+		self.d_w_xc = np.zeros([out_size, inp_size]);	self.d_w_hc = np.zeros([out_size, out_size])
+		self.d_b_c = np.zeros([out_size, 1])
+		
+		# external weights
+		self.d_w_hy = np.zeros([out_size, out_size]);	self.d_b_y = np.zeros([out_size, 1])
+		
+	def incr(self, other):
+		# += operator
+		self.d_w_xi += other.d_w_xi;	self.d_w_hi += other.d_w_hi
+		self.d_w_ci += other.d_w_ci;	self.d_b_i += other.d_b_i
+		
+		self.d_w_xf += other.d_w_xf;	self.d_w_hf += other.d_w_hf
+		self.d_w_cf += other.d_w_cf;	self.d_b_f += other.d_b_f
+		
+		self.d_w_xo += other.d_w_xo;	self.d_w_ho += other.d_w_ho
+		self.d_w_co += other.d_w_co;	self.d_b_o += other.d_b_o
+
+		self.d_w_xc += other.d_w_xc;	self.d_w_hc += other.d_w_hc
+		self.d_b_c += other.d_b_c
+		
+		self.d_w_hy += other.d_w_hy;	self.d_b_y += other.d_b_y
+		
+	def div(self, factor):
+		# /= operator
+		self.d_w_xi /= factor;	self.d_w_hi /= factor
+		self.d_w_ci /= factor;	self.d_b_i /= factor
+
+		self.d_w_xf /= factor;	self.d_w_hf /= factor
+		self.d_w_cf /= factor;	self.d_b_f /= factor
+
+		self.d_w_xo /= factor;	self.d_w_ho /= factor
+		self.d_w_co /= factor;	self.d_b_o /= factor
+
+		self.d_w_xc /= factor;	self.d_w_hc /= factor
+		self.d_b_c /= factor
+
+		self.d_w_hy /= factor;	self.d_b_y /= factor
+	
+
 

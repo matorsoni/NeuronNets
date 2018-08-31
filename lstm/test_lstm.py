@@ -26,5 +26,5 @@ trainer.forward_backward_prop(x_inputs[0], labels[0])
 
 trainer.train(x_inputs, labels, learning_rate=0.0001, batch_size=5, n_epochs=1000)
 print(x_inputs[0])
-print(lstm.single_forward_pass(x_inputs[0], labels[0]))
+print(lstm.single_forward_pass(x_inputs[0]))
 print(labels[0])
