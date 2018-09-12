@@ -10,6 +10,8 @@ class LSTM_Block:
 	Notation: 
 	a_t = a_{t}
 	a_t_ = a_{t-1}
+	
+
 	"""
 	def __init__(self, n_mem_cells: int, inp_size: int, out_size: int):
 		
@@ -66,6 +68,9 @@ class LSTM_Block:
 		
 		self.c_list.append(deepcopy(c_t))
 		self.h_list.append(deepcopy(h_t))
+		#self.c_list.append(c_t)
+		#self.h_list.append(h_t)
+		
 		# only keeps the current values and the previous values
 		if len(self.c_list)>2 and len(self.h_list)>2 :
 			self.c_list.pop(0)

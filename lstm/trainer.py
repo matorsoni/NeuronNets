@@ -129,6 +129,7 @@ class LSTM_Trainer:
 			
 			# randomly picks all possible starting points
 			while len(list_starting_points) > 0:
+				print(len(list_starting_points))
 				batch_gradient = Gradient(self.lstm.inp_size, self.lstm.out_size) # total gradient of this batch
 				self.cell_grad.reset()
 				self.lstm.reset_block()
@@ -138,6 +139,6 @@ class LSTM_Trainer:
 				for i in range(batch_size):
 					grad = self.forward_backward_prop(x_inputs[t0+i], labels[t0+i])
 					grad.div(batch_size)
-					batch_gradient.incr(grad) # BUG ESQUSITOOOOOOOOOOOOOO
+					batch_gradient.incr(grad)
 				
 				self.update_weights(learning_rate, batch_gradient)
