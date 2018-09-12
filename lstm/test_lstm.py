@@ -18,7 +18,7 @@ def data_handler_evol1D():
 	# output = (x, v)
 	inputs = []
 	labels = []
-	dir = '/home/morsoni/dataset/evol1D'
+	dir = '/home/morsoni/dataset/evol1D/'
 	X = np.genfromtxt(dir + 'x.dat', delimiter = ',')
 	V = np.genfromtxt(dir + 'v.dat', delimiter = ',')
 	W = np.genfromtxt(dir + 'w.dat', delimiter = ',')
