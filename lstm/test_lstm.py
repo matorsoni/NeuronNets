@@ -44,17 +44,17 @@ def main():
 	out_size = 2 #512
 	# inp_size = 100 and out_size = 80 : ~100s per epoch 
 	lstm = LSTM(inp_size, out_size)
-	
+	inputs, labels = data_handler_evol1D()
 	# forward_pass test
-	out = lstm.forward_pass(x_inputs)
+	out = lstm.forward_pass(inputs)
 		
 	# trainer test
 	trainer = LSTM_Trainer(lstm)
-	trainer.forward_backward_prop(x_inputs[0], labels[0])
+	trainer.forward_backward_prop(inputs[0], labels[0])
 	
-	trainer.train(x_inputs, labels, learning_rate=0.0001, batch_size=5, n_epochs=1000)
+	trainer.train(inputs, labels, learning_rate=0.0001, batch_size=5, n_epochs=1000)
 	print(x_inputs[0])
-	print(lstm.single_forward_pass(x_inputs[0]))
+	print(lstm.single_forward_pass(inputs[0]))
 	print(labels[0])
 	
 if __name__ == "__main__":
