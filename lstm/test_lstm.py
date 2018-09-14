@@ -25,13 +25,13 @@ def data_handler_evol1D():
 	inputs = []
 	labels = []
 	dir = '/home/morsoni/dataset/evol1D/input/'
-	X = np.genfromtxt(dir + 'x.dat', delimiter = ',')
-	V = np.genfromtxt(dir + 'v.dat', delimiter = ',')
-	W = np.genfromtxt(dir + 'w.dat', delimiter = ',')
+	X = np.genfromtxt(dir + 'x.csv', delimiter = ',')
+	V = np.genfromtxt(dir + 'v.csv', delimiter = ',')
+	W = np.genfromtxt(dir + 'w.csv', delimiter = ',')
 	assert X.shape == V.shape
 	assert V.shape == W.shape
 	
-	n_realisation = 300
+	n_realisation = 700
 	X = X[:, n_realisation]
 	V = V[:, n_realisation]
 	W = W[:, n_realisation]
@@ -46,7 +46,10 @@ def test_model_1D(lstm ,inputs, labels):
 	save_dir='/home/morsoni/dataset/evol1D/output/'
 	#output_list = []
 	position_input_list = [x[0][0] for x in inputs]; position_input_list.pop()
+	vel_input_list = [x[1][0] for x in inputs]; vel_input_list.pop()
+
 	position_output_list=[]
+	vel_output_list=[]
 	error_list = []
 	x_t = inputs[0]
 	for t in range(len(labels)-1):
@@ -58,11 +61,14 @@ def test_model_1D(lstm ,inputs, labels):
 		x_t = col( np.array([x_out, v_out, w]) )
 		
 		error_list.append(err)
-		position_output_list.append(y_t[0][0])
+		position_output_list.append(x_out)
+		vel_output_list.append(v_out)
 		#output_list.append(y_t)
 	#return position_input_list, position_output_list, error_list
 	write_list(position_input_list, save_dir+'pos_in.csv')
 	write_list(position_output_list, save_dir+'pos_out.csv')
+	write_list(vel_input_list, save_dir+'vel_in.csv')
+	write_list(vel_output_list, save_dir+'vel_out.csv')
 	write_list(error_list, save_dir+'error.csv')	
 	
 ### Main
@@ -81,9 +87,11 @@ def main():
 	trainer = LSTM_Trainer(lstm)
 	trainer.forward_backward_prop(inputs[0], labels[0])
 	
-	trainer.train(inputs, labels, learning_rate=0.0001, batch_size=10, n_epochs=10)
+	trainer.train(inputs, labels, learning_rate=0.001, batch_size=10, n_epochs=10)
 	#position_input_list, position_output_list, error_list = test_model_1D(lstm, inputs, labels)
 	test_model_1D(lstm ,inputs, labels)
+
+	save_model(lstm, 'model1')
 
 
 if __name__ == "__main__":

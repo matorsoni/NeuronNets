@@ -28,21 +28,21 @@ class LSTM_Trainer:
 		
 		### gradient of the cell state c_t
 		aux_di = d_sigmoid(in_i)
-		self.cell_grad.d_w_xi = vec_dot_ten(z_t*aux_di, vec2ten(x_t, out)) + vec_dot_ten(f_t, self.cell_grad.d_w_xi) 
-		self.cell_grad.d_w_hi = vec_dot_ten(z_t*aux_di, vec2ten(h_t_, out)) + vec_dot_ten(f_t, self.cell_grad.d_w_hi) 
-		self.cell_grad.d_w_ci = vec_dot_ten(z_t*aux_di, vec2diag_mat(c_t_)) + vec_dot_ten(f_t, self.cell_grad.d_w_ci)
-		self.cell_grad.d_b_i = vec_dot_ten(z_t*aux_di, vec2diag_mat(col(np.ones(out)))) + vec_dot_ten(f_t, self.cell_grad.d_b_i)
+		self.cell_grad.d_w_xi = vec_dot_ten(z_t*aux_di, vec2ten(x_t, out))# + vec_dot_ten(f_t, self.cell_grad.d_w_xi) 
+		self.cell_grad.d_w_hi = vec_dot_ten(z_t*aux_di, vec2ten(h_t_, out))# + vec_dot_ten(f_t, self.cell_grad.d_w_hi) 
+		self.cell_grad.d_w_ci = vec_dot_ten(z_t*aux_di, vec2diag_mat(c_t_))# + vec_dot_ten(f_t, self.cell_grad.d_w_ci)
+		self.cell_grad.d_b_i = vec_dot_ten(z_t*aux_di, vec2diag_mat(col(np.ones(out))))# + vec_dot_ten(f_t, self.cell_grad.d_b_i)
 		
 		aux_df = d_sigmoid(in_f)
-		self.cell_grad.d_w_xf = vec_dot_ten(c_t_*aux_df, vec2ten(x_t, out)) + vec_dot_ten(f_t, self.cell_grad.d_w_xf)
-		self.cell_grad.d_w_hf = vec_dot_ten(c_t_*aux_df, vec2ten(h_t_, out)) + vec_dot_ten(f_t, self.cell_grad.d_w_hf)
-		self.cell_grad.d_w_cf = vec_dot_ten(c_t_*aux_df, vec2diag_mat(c_t_)) + vec_dot_ten(f_t, self.cell_grad.d_w_cf)
-		self.cell_grad.d_b_f = vec_dot_ten(c_t_*aux_df, vec2diag_mat(col(np.ones(out)))) + vec_dot_ten(f_t, self.cell_grad.d_b_f)
+		self.cell_grad.d_w_xf = vec_dot_ten(c_t_*aux_df, vec2ten(x_t, out))# + vec_dot_ten(f_t, self.cell_grad.d_w_xf)
+		self.cell_grad.d_w_hf = vec_dot_ten(c_t_*aux_df, vec2ten(h_t_, out))# + vec_dot_ten(f_t, self.cell_grad.d_w_hf)
+		self.cell_grad.d_w_cf = vec_dot_ten(c_t_*aux_df, vec2diag_mat(c_t_))# + vec_dot_ten(f_t, self.cell_grad.d_w_cf)
+		self.cell_grad.d_b_f = vec_dot_ten(c_t_*aux_df, vec2diag_mat(col(np.ones(out))))# + vec_dot_ten(f_t, self.cell_grad.d_b_f)
 		
 		aux_dz = d_sigmoid(in_z)
-		self.cell_grad.d_w_xc = vec_dot_ten(i_t*aux_dz, vec2ten(x_t, out)) + vec_dot_ten(f_t, self.cell_grad.d_w_xc)
-		self.cell_grad.d_w_hc = vec_dot_ten(i_t*aux_dz, vec2ten(h_t_, out)) + vec_dot_ten(f_t, self.cell_grad.d_w_hc)
-		self.cell_grad.d_b_c = vec_dot_ten(i_t*aux_dz, vec2diag_mat(col(np.ones(out)))) + vec_dot_ten(f_t, self.cell_grad.d_b_c)
+		self.cell_grad.d_w_xc = vec_dot_ten(i_t*aux_dz, vec2ten(x_t, out))# + vec_dot_ten(f_t, self.cell_grad.d_w_xc)
+		self.cell_grad.d_w_hc = vec_dot_ten(i_t*aux_dz, vec2ten(h_t_, out))# + vec_dot_ten(f_t, self.cell_grad.d_w_hc)
+		self.cell_grad.d_b_c = vec_dot_ten(i_t*aux_dz, vec2diag_mat(col(np.ones(out))))# + vec_dot_ten(f_t, self.cell_grad.d_b_c)
 		###
 		
 		if cost_function == 'MSE':
